@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - StecyMaster</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><span class="text-orange">Admin</span> Dashboard</div>
+        <button onclick="window.location.href='index.html'" class="btn-dark">Kembali</button>
+    </header>
+
+    <div style="padding: 15px;">
+        <h3 style="color: white; margin-bottom: 10px;">Item Menunggu Verifikasi</h3>
+        <div id="pendingContainer">
+            <!-- Data pending dimuat di sini -->
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Trigger load data pending khusus di halaman ini
+        window.onload = () => {
+            setTimeout(() => { if(isUserAdmin) loadPendingItems(); else alert("Akses Ditolak!"); }, 1500);
+        };
+    </script>
+</body>
+</html>
