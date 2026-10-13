@@ -1,99 +1,517 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StecyMaster Forum</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>StecyMaster MCPE Forum</title>
+  <style>
+    /* BASE UI & COLORS */
+    :root {
+      --bg-dark: #121212; --bg-card: #1e1e1e;
+      --primary: #ff8c00; --text-light: #f5f5f5; --text-gray: #aaaaaa;
+    }
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-light); overflow-x: hidden; }
+    * { box-sizing: border-box; }
+    
+    /* HEADER & SIDEBAR */
+    header { display: flex; align-items: center; padding: 15px; background-color: var(--bg-card); border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
+    .menu-btn { background: none; border: none; color: var(--text-light); font-size: 24px; cursor: pointer; margin-right: 15px; }
+    .logo-text { font-size: 20px; font-weight: bold; color: var(--primary); flex-grow: 1; }
+    
+    /* SIDEBAR */
+    #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
+    #sidebar { position: fixed; top: 0; left: -300px; width: 78%; max-width: 300px; height: 100vh; background-color: var(--bg-card); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; }
+    .sidebar-profile { padding: 20px; border-bottom: 1px solid #333; text-align: center; }
+    .sidebar-profile img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); }
+    .sidebar-menu { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+    .sidebar-menu li { padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .sidebar-menu li:active { background-color: #333; }
+    .badge-admin { background: red; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .badge-pending { background: var(--primary); color: #fff; padding: 2px 6px; border-radius: 50%; font-size: 12px; margin-left: auto; }
+
+    /* LAYAR & MODAL */
+    .screen { display: none; padding: 20px; padding-bottom: 80px; }
+    .screen.active { display: block; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
+    .modal-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 2px solid var(--primary); width: 90%; max-width: 400px; text-align: center; transform: scale(0.9); transition: transform 0.3s; }
+    .modal-card h3 { margin-top: 0; }
+    .modal-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+    .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-gray { background: #555; color: white; }
+    
+    /* INPUTS & CARDS */
+    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; background: #333; border: 1px solid #555; color: white; border-radius: 6px; }
+    .item-card { background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; }
+    .item-img { width: 100%; height: 150px; object-fit: cover; }
+    .item-content { padding: 15px; }
+    .label-baru { position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    
+    /* FAB & UTILS */
+    .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; color: white; box-shadow: 0 4px 10px rgba(255,140,0,0.5); cursor: pointer; z-index: 90; }
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <header>
-        <div class="menu-icon">☰</div>
-        <div class="logo"><span class="text-orange">Stecy</span>Master</div>
+
+  <!-- HEADER -->
+  <header id="main-header" class="hidden">
+    <button class="menu-btn" onclick="window.toggleSidebar()">☰</button>
+    <div class="logo-text">StecyMaster</div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar-overlay" onclick="window.toggleSidebar()"></div>
+  <div id="sidebar">
+    <div class="sidebar-profile">
+      <img id="profile-img" src="" alt="Avatar">
+      <h3 id="profile-name" style="margin: 10px 0 5px 0;">Username</h3>
+      <div id="profile-role"></div>
+    </div>
+    <ul class="sidebar-menu">
+      <li onclick="window.switchLanguage()">
+        <span style="font-size: 20px;">A/文</span> 
+        <span data-i18n="menu_translate">Terjemahan (ID/EN)</span>
+      </li>
+      <li onclick="window.showScreen('screen-home'); window.toggleSidebar();">
+        <span data-i18n="menu_home">Beranda</span>
+      </li>
+      <li id="menu-admin" class="hidden" onclick="window.showScreen('screen-admin'); window.toggleSidebar();">
+        <span data-i18n="menu_admin">Dashboard Seleksi</span> <span class="badge-pending" id="pending-count">0</span>
+      </li>
+      <li onclick="window.showScreen('screen-add'); window.toggleSidebar();">
+        <span data-i18n="menu_add">Kirim Item</span>
+      </li>
+      <li onclick="window.open('https://youtube.com/@stecymc', '_blank')">
+        YouTube Official
+      </li>
+      <li onclick="window.logoutPopup(); window.toggleSidebar();">
+        <span data-i18n="menu_logout">Keluar akun</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- LAYAR LOGIN -->
+  <div id="screen-login" class="screen active" style="text-align: center; margin-top: 50px;">
+    <h1 style="color: var(--primary);">StecyMaster</h1>
+    <p data-i18n="login_desc">Forum & Database MCPE Mod</p>
+    <button class="btn btn-primary" onclick="window.loginGoogle()" style="margin-top: 20px;">
+      <span data-i18n="login_btn">Sign in with Google</span>
+    </button>
+    <p id="login-error" style="color: red; margin-top: 10px;"></p>
+  </div>
+
+  <!-- LAYAR BUAT USERNAME -->
+  <div id="screen-username" class="screen" style="text-align: center; margin-top: 50px;">
+    <h2 data-i18n="create_user_title">Buat Username</h2>
+    <p data-i18n="create_user_desc">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
+    <input type="text" id="input-username" placeholder="Username_Keren">
+    <button class="btn btn-primary" onclick="window.saveUsername()" data-i18n="btn_save">Simpan</button>
+    <p id="username-error" style="color: red; margin-top: 10px;"></p>
+    
+    <!-- Panel Khusus Admin Utama -->
+    <div id="panel-admin-setup" class="hidden" style="margin-top: 30px; background: #333; padding: 15px; border-radius: 8px;">
+      <h3 style="color: red;">Setup Admin Utama</h3>
+      <p>Email Anda terdeteksi. Salin UID ini ke Firebase Realtime Database <code>/admins/</code></p>
+      <input type="text" id="admin-uid-copy" readonly>
+      <button class="btn btn-gray" onclick="window.copyAdminUID()">Salin UID</button>
+    </div>
+  </div>
+
+  <!-- LAYAR BERANDA -->
+  <div id="screen-home" class="screen">
+    <h2 data-i18n="home_title">Daftar Item Publik</h2>
+    <div id="public-items-container">
+      <p style="text-align: center;" data-i18n="loading">Memuat data...</p>
+    </div>
+    <!-- FAB ADD -->
+    <div class="fab" onclick="window.showScreen('screen-add')">+</div>
+  </div>
+
+  <!-- LAYAR TAMBAH ITEM -->
+  <div id="screen-add" class="screen">
+    <h2 data-i18n="add_title">Kirim Item Baru</h2>
+    <input type="text" id="add-title" placeholder="Judul Item" required>
+    <select id="add-cat">
+      <option value="Mod">Mod</option>
+      <option value="Map">Map</option>
+      <option value="Texture">Texture</option>
+    </select>
+    <textarea id="add-desc-id" placeholder="Deskripsi (Indonesia)" rows="3"></textarea>
+    <textarea id="add-desc-en" placeholder="Description (English)" rows="3"></textarea>
+    <input type="url" id="add-img" placeholder="URL Gambar Preview (https://...)">
+    
+    <div style="background: #333; padding: 10px; margin-bottom: 10px; border-radius: 6px;">
+      <p style="margin:0 0 10px 0; font-size: 12px; color: #ccc;" data-i18n="catbox_note">Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah. (Upload langsung sering diblokir browser).</p>
+      <button class="btn btn-gray" onclick="window.open('https://catbox.moe', '_blank')" style="width: 100%; margin-bottom: 10px;" data-i18n="btn_catbox">Buka Catbox.moe</button>
+      <input type="url" id="add-file" placeholder="URL File Download (https://files.catbox.moe/...)">
+    </div>
+    
+    <button class="btn btn-primary" onclick="window.submitItem()" data-i18n="btn_submit">Kirim / Publikasikan</button>
+  </div>
+
+  <!-- LAYAR ADMIN DASHBOARD -->
+  <div id="screen-admin" class="screen">
+    <h2 data-i18n="admin_title">Dashboard Seleksi</h2>
+    <div id="pending-items-container"></div>
+  </div>
+
+  <!-- MODAL LOGOUT -->
+  <div id="modal-logout" class="modal-overlay">
+    <div class="modal-card">
+      <h2 data-i18n="logout_title">Yakin ingin keluar?</h2>
+      <div style="margin: 20px 0;">
+        <img id="logout-avatar" src="" style="width: 80px; border-radius: 50%;">
+        <p id="logout-user" style="font-weight: bold; margin: 10px 0 0 0;"></p>
+        <p id="logout-email" style="color: var(--text-gray); margin: 0; font-size: 14px;"></p>
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-gray" onclick="window.closeModal('modal-logout')" data-i18n="btn_cancel">Batal</button>
+        <button class="btn btn-danger" onclick="window.confirmLogout()" data-i18n="btn_logout">Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE MODULAR SDK v10.13.0 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, get, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+    // Konfigurasi Anda
+    const firebaseConfig = {
+      projectId: "stecymaster-e285a",
+      // Tambahkan API Key & App ID Anda yang lengkap di sini saat di-host
+      // apiKey: "AIzaSy...",
+      // authDomain: "stecymaster-e285a.firebaseapp.com",
+      // databaseURL: "https://stecymaster-e285a-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    setPersistence(auth, browserLocalPersistence);
+
+    let currentUser = null;
+    let isAdmin = false;
+    let currentLang = localStorage.getItem('lang') || 'id';
+
+    // KAMUS TERJEMAHAN
+    const dict = {
+      'id': {
+        menu_translate: "Terjemahan (ID/EN)", menu_home: "Beranda", menu_admin: "Dashboard Seleksi", menu_add: "Kirim Item", menu_logout: "Keluar akun",
+        login_desc: "Forum & Database MCPE Mod", login_btn: "Masuk dengan Google",
+        create_user_title: "Buat Username", create_user_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).", btn_save: "Simpan",
+        home_title: "Daftar Item Publik", loading: "Memuat data...",
+        add_title: "Kirim Item Baru", catbox_note: "Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah.", btn_catbox: "Buka Catbox.moe", btn_submit: "Kirim / Publikasikan",
+        admin_title: "Dashboard Seleksi", logout_title: "Yakin ingin keluar?", btn_cancel: "Batal", btn_logout: "Keluar"
+      },
+      'en': {
+        menu_translate: "Translate (ID/EN)", menu_home: "Home", menu_admin: "Selection Dashboard", menu_add: "Submit Item", menu_logout: "Logout",
+        login_desc: "MCPE Mod Forum & Database", login_btn: "Sign in with Google",
+        create_user_title: "Create Username", create_user_desc: "Letters, numbers, underscore only (3-16 chars).", btn_save: "Save",
+        home_title: "Public Items", loading: "Loading data...",
+        add_title: "Submit New Item", catbox_note: "Use Catbox.moe to upload files and paste the URL below.", btn_catbox: "Open Catbox.moe", btn_submit: "Submit / Publish",
+        admin_title: "Selection Dashboard", logout_title: "Are you sure you want to logout?", btn_cancel: "Cancel", btn_logout: "Logout"
+      }
+    };
+
+    window.applyLanguage = () => {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
+      });
+      loadPublicItems(); // re-render item descriptions based on lang
+    };
+
+    window.switchLanguage = () => {
+      currentLang = currentLang === 'id' ? 'en' : 'id';
+      localStorage.setItem('lang', currentLang);
+      window.applyLanguage();
+    };
+
+    // UI NAVIGATION
+    window.showScreen = (id) => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id !== 'screen-login' && id !== 'screen-username') {
+        document.getElementById('main-header').classList.remove('hidden');
+      } else {
+        document.getElementById('main-header').classList.add('hidden');
+      }
+    };
+
+    // SIDEBAR SWIPE LOGIC
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    let touchStartX = 0;
+    
+    window.toggleSidebar = () => {
+      const isOpen = sidebar.style.left === '0px';
+      sidebar.style.left = isOpen ? '-300px' : '0px';
+      overlay.style.display = isOpen ? 'none' : 'block';
+      setTimeout(() => overlay.style.opacity = isOpen ? '0' : '1', 10);
+    };
+
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+    document.addEventListener('touchend', e => {
+      if (sidebar.style.left === '0px' && touchStartX - e.changedTouches[0].screenX > 50) {
+        window.toggleSidebar(); // swipe left to close
+      }
+    });
+
+    // MODAL
+    window.closeModal = (id) => {
+      const modal = document.getElementById(id);
+      modal.querySelector('.modal-card').style.transform = 'scale(0.9)';
+      setTimeout(() => modal.style.display = 'none', 200);
+    };
+    
+    window.logoutPopup = () => {
+      document.getElementById('logout-avatar').src = currentUser.photoURL;
+      document.getElementById('logout-user').innerText = document.getElementById('profile-name').innerText;
+      document.getElementById('logout-email').innerText = currentUser.email;
+      const modal = document.getElementById('modal-logout');
+      modal.style.display = 'flex';
+      setTimeout(() => modal.querySelector('.modal-card').style.transform = 'scale(1)', 10);
+    };
+
+    // KETIKA KLIK DI LUAR MODAL TUTUP MODAL
+    document.getElementById('modal-logout').addEventListener('click', (e) => {
+      if(e.target === document.getElementById('modal-logout')) window.closeModal('modal-logout');
+    });
+    // ESC tutup modal
+    document.addEventListener('keydown', (e) => {
+      if(e.key === "Escape") window.closeModal('modal-logout');
+    });
+
+    // LOGIN & AUTH
+    window.loginGoogle = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+           signInWithRedirect(auth, provider);
+        } else {
+           document.getElementById('login-error').innerText = "Login gagal: " + error.message;
+        }
+      }
+    };
+
+    // CEK HASIL REDIRECT (FALLBACK)
+    getRedirectResult(auth).catch(err => {
+      document.getElementById('login-error').innerText = "Redirect Error: " + err.message;
+    });
+
+    window.confirmLogout = () => {
+      signOut(auth).then(() => {
+        window.closeModal('modal-logout');
+        window.showScreen('screen-login');
+      });
+    };
+
+    // AUTH STATE
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('profile-img').src = user.photoURL;
         
-        <!-- Area Login / Profil -->
-        <div id="userArea" style="display: flex; gap: 10px; align-items: center;">
-            <button id="btnOpenLogin" class="btn-orange" onclick="bukaLoginModal()" style="padding: 6px 14px; font-size: 13px; border-radius: 20px;">Login</button>
-            <img id="userProfilePic" src="" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; display: none; cursor: pointer;" onclick="logout()">
-        </div>
-    </header>
+        // Cek username
+        const userRef = ref(db, `users/${user.uid}`);
+        const snap = await get(userRef);
+        if (snap.exists() && snap.val().username) {
+           document.getElementById('profile-name').innerText = snap.val().username;
+           checkAdminStatus();
+        } else {
+           window.showScreen('screen-username');
+           if (user.email === 'hamdisyarud@gmail.com') {
+             document.getElementById('panel-admin-setup').classList.remove('hidden');
+             document.getElementById('admin-uid-copy').value = user.uid;
+           }
+        }
+      } else {
+        currentUser = null;
+        window.showScreen('screen-login');
+      }
+    });
 
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Cari mod, texture, map...">
-    </div>
+    window.copyAdminUID = () => {
+      const uidInput = document.getElementById('admin-uid-copy');
+      uidInput.select();
+      document.execCommand('copy');
+      alert("UID disalin! Masukkan ke JSON /admins/ di Firebase Console.");
+    };
 
-    <!-- Kategori -->
-    <div class="tabs">
-        <button class="tab active" onclick="filterKategori('Semua')">Semua</button>
-        <button class="tab" onclick="filterKategori('Mod')">Mod</button>
-        <button class="tab" onclick="filterKategori('Texture')">Texture</button>
-        <button class="tab" onclick="filterKategori('Map')">Map</button>
-    </div>
+    window.saveUsername = async () => {
+      const username = document.getElementById('input-username').value.trim();
+      const errEl = document.getElementById('username-error');
+      if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
+         errEl.innerText = "Format salah (3-16 huruf/angka/_)"; return;
+      }
+      try {
+        const usernameRef = ref(db, `usernames/${username}`);
+        const unSnap = await get(usernameRef);
+        if (unSnap.exists() && unSnap.val() !== currentUser.uid) {
+           errEl.innerText = "Username sudah dipakai!"; return;
+        }
+        await set(usernameRef, currentUser.uid);
+        await set(ref(db, `users/${currentUser.uid}/username`), username);
+        document.getElementById('profile-name').innerText = username;
+        checkAdminStatus();
+      } catch (e) {
+        errEl.innerText = "Gagal menyimpan: " + e.message;
+      }
+    };
 
-    <!-- Feed Item -->
-    <div class="container" id="feedContainer">
-        <p style="text-align: center; color: #888; padding: 20px;">Memuat data...</p>
-    </div>
+    async function checkAdminStatus() {
+      const adminRef = ref(db, `admins/${currentUser.uid}`);
+      onValue(adminRef, (snap) => {
+        if (snap.exists() && snap.val() === true) {
+          isAdmin = true;
+          document.getElementById('profile-role').innerHTML = '<span class="badge-admin">ADMIN</span>';
+          document.getElementById('menu-admin').classList.remove('hidden');
+          loadPendingItems(); // Mulai memantau pending untuk badge
+        }
+      });
+      window.showScreen('screen-home');
+      window.applyLanguage();
+      loadPublicItems();
+    }
 
-    <!-- Tombol Plus (Sembunyi sebelum login) -->
-    <div id="floatingBtn" onclick="bukaModal()">+</div>
+    // REALTIME DATABASE LOGIC (PUBLIC)
+    let publicItemsCache = {};
+    function loadPublicItems() {
+      const pubRef = ref(db, 'items_public');
+      onValue(pubRef, (snapshot) => {
+        const container = document.getElementById('public-items-container');
+        container.innerHTML = '';
+        if (!snapshot.exists()) {
+          container.innerHTML = '<p style="text-align:center">Tidak ada item.</p>';
+          return;
+        }
+        const items = [];
+        snapshot.forEach(child => { items.push({ id: child.key, ...child.val() }); });
+        
+        // Urut terbaru (createdAt)
+        items.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-    <!-- Modal Form Upload Item -->
-    <div id="modalUpload" class="modal">
-        <div class="modal-box">
-            <h3 style="margin-bottom:10px;">Kirim Item Baru</h3>
-            <input type="text" id="judulItem" placeholder="Judul Mod/Texture">
-            <select id="kategoriItem">
-                <option value="Mod">Mod</option>
-                <option value="Texture">Texture</option>
-                <option value="Map">Map</option>
-            </select>
-            <input type="text" id="versiMcpe" placeholder="Versi MCPE (ex: 0.15.10)">
-            <textarea id="deskripsiItem" rows="3" placeholder="Deskripsi singkat..."></textarea>
-            <input type="url" id="urlGambar" placeholder="URL Gambar Thumbnail">
-            <input type="url" id="urlFile" placeholder="URL File Download">
-            <div class="modal-actions">
-                <button class="btn-orange" onclick="kirimItem()">Kirim</button>
-                <button class="btn-dark" onclick="tutupModal()">Batal</button>
-            </div>
-        </div>
-    </div>
+        items.forEach(item => {
+           const isBaru = (Date.now() - item.createdAt) < 86400000;
+           const desc = currentLang === 'en' ? (item.desc_en || item.desc_id) : item.desc_id;
+           let html = `
+            <div class="item-card">
+              ${isBaru ? '<span class="label-baru">BARU</span>' : ''}
+              <img src="${item.url_img}" class="item-img" onerror="this.src='https://via.placeholder.com/300x150?text=No+Image'">
+              <div class="item-content">
+                <h3 style="margin:0 0 10px 0;">${item.title}</h3>
+                <p style="margin:0 0 10px 0; font-size:14px; color:var(--text-gray);">${desc}</p>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="background:var(--primary); padding:2px 8px; border-radius:12px; font-size:12px;">${item.category}</span>
+                  <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="text-decoration:none; padding:5px 15px;">Download</a>
+                </div>
+                ${isAdmin ? `<button class="btn btn-danger" style="width:100%; margin-top:10px; padding:5px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus (Admin)</button>` : ''}
+              </div>
+            </div>`;
+           container.innerHTML += html;
+        });
+      });
+    }
 
-    <!-- Modal Form Login Modern -->
-    <div id="loginModal" class="login-modal">
-        <div class="login-box">
-            <button class="login-close" onclick="tutupLoginModal()">×</button>
-            <h2 id="loginTitleText">Welcome Back<br>to StecyMaster</h2>
-            <p class="login-subtitle" id="loginSubtitleText">New to StecyMaster? <span onclick="toggleLoginMode()">Sign up</span></p>
+    // REALTIME DATABASE LOGIC (PENDING / ADMIN)
+    function loadPendingItems() {
+      if(!isAdmin) return;
+      onValue(ref(db, 'items_pending'), (snapshot) => {
+        const container = document.getElementById('pending-items-container');
+        container.innerHTML = '';
+        let count = 0;
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            count++;
+            const item = child.val();
+            container.innerHTML += `
+              <div class="item-card" style="border: 1px solid #ffcc00;">
+                <div class="item-content">
+                  <h4>${item.title} <span style="font-size:12px; font-weight:normal;">(dari: ${item.username})</span></h4>
+                  <div class="modal-btns">
+                    <button class="btn" style="background:#28a745; color:white;" onclick="window.approveItem('${child.key}')">Setuju</button>
+                    <button class="btn btn-danger" onclick="window.rejectItem('${child.key}')">Tolak</button>
+                  </div>
+                </div>
+              </div>`;
+          });
+        } else {
+          container.innerHTML = '<p>Tidak ada kiriman baru.</p>';
+        }
+        document.getElementById('pending-count').innerText = count;
+      });
+    }
 
-            <input type="email" id="emailInput" class="login-input" placeholder="Email address">
-            <input type="password" id="passwordInput" class="login-input" placeholder="Password">
+    // SUBMIT ITEM
+    window.submitItem = async () => {
+      if (!currentUser) return;
+      const title = document.getElementById('add-title').value;
+      const cat = document.getElementById('add-cat').value;
+      const desc_id = document.getElementById('add-desc-id').value;
+      const desc_en = document.getElementById('add-desc-en').value;
+      const img = document.getElementById('add-img').value;
+      const file = document.getElementById('add-file').value;
 
-            <button class="btn-primary-login" id="btnSubmitAuth" onclick="prosesEmailAuth()">Log in</button>
+      if (!title || !img || !file) { alert("Judul, Gambar, dan File wajib diisi!"); return; }
+      if (!img.startsWith('https://') || !file.startsWith('https://')) { alert("URL harus dimulai dengan https://"); return; }
 
-            <div class="login-divider">
-                <span>or sign in with</span>
-            </div>
+      const data = {
+        title: title, category: cat, desc_id: desc_id, desc_en: desc_en,
+        url_img: img, url_file: file,
+        uid: currentUser.uid, username: document.getElementById('profile-name').innerText,
+        createdAt: serverTimestamp()
+      };
 
-            <div class="social-login-container">
-                <button class="btn-social" onclick="loginGoogle()">
-                    <!-- Ikon SVG Google Asli -->
-                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
+      try {
+        if (isAdmin) {
+          // Admin: Langsung masuk public
+          await push(ref(db, 'items_public'), data);
+          alert("Item berhasil dipublikasikan!");
+          window.showScreen('screen-home');
+        } else {
+          // User: Masuk pending
+          await push(ref(db, 'items_pending'), data);
+          alert("Item terkirim! Menunggu persetujuan admin.");
+          window.showScreen('screen-home');
+        }
+      } catch (e) {
+        alert("Gagal mengirim: " + e.message);
+      }
+    };
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <script src="app.js"></script>
+    // ADMIN ACTIONS
+    window.approveItem = async (id) => {
+      const snap = await get(ref(db, `items_pending/${id}`));
+      if(snap.exists()){
+         await set(ref(db, `items_public/${id}`), snap.val());
+         await remove(ref(db, `items_pending/${id}`));
+      }
+    };
+    
+    window.rejectItem = async (id) => {
+      const alasan = prompt("Alasan penolakan:");
+      if (alasan !== null) {
+        // (Opsional) Simpan ke /items_rejected/{id} agar user bisa lihat alasan
+        await remove(ref(db, `items_pending/${id}`));
+      }
+    };
+
+    window.deletePublicItem = async (id, title) => {
+      if(confirm(`HAPUS ITEM PUBLIK:\n"${title}"\nApakah Anda yakin?`)) {
+        await push(ref(db, 'deleted_log'), {
+          title: title, deletedBy: currentUser.uid, deletedAt: serverTimestamp()
+        });
+        await remove(ref(db, `items_public/${id}`));
+      }
+    };
+
+    window.applyLanguage(); // init bahasa
+  </script>
 </body>
 </html>
