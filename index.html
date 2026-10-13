@@ -64,6 +64,7 @@
     .auth-input-group input { background-color: transparent; border: 1px solid #444; border-radius: 10px; padding: 15px; font-size: 14px; color: white; width: 100%; transition: border-color 0.3s; margin-bottom: 0; }
     .auth-input-group input:focus { border-color: var(--primary); }
     .auth-submit-btn { width: 100%; background-color: var(--primary); color: black; font-weight: bold; padding: 15px; border-radius: 10px; border: none; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    .auth-submit-btn:disabled { background-color: #555; cursor: not-allowed; }
     .auth-divider { display: flex; align-items: center; margin: 25px 0; }
     .auth-divider hr { flex: 1; border: none; border-top: 1px solid #333; margin: 0; }
     .auth-divider span { color: #555; font-size: 12px; padding: 0 10px; }
@@ -110,7 +111,7 @@
     </ul>
   </div>
 
-  <!-- LAYAR LOGIN BARU -->
+  <!-- LAYAR LOGIN/REGISTER BARU -->
   <div id="screen-login" class="screen active" style="padding: 0;">
     <div class="login-container">
       <div class="login-box">
@@ -129,7 +130,7 @@
         </div>
 
         <button class="auth-submit-btn" id="auth-submit-btn" onclick="window.processEmailAuth()">Log in</button>
-        <p id="login-error" style="color: red; margin-top: 10px; font-size: 12px; text-align: center;"></p>
+        <p id="login-error" style="color: red; margin-top: 15px; font-size: 13px; text-align: center;"></p>
 
         <div class="auth-divider">
           <hr>
@@ -242,9 +243,8 @@
     let currentUser = null;
     let isAdmin = false;
     let currentLang = localStorage.getItem('lang') || 'id';
-    let isSignUpMode = false; // Mode Login atau Daftar
+    let isSignUpMode = false;
 
-    // KAMUS TERJEMAHAN
     const dict = {
       'id': {
         menu_translate: "Terjemahan (ID/EN)", menu_home: "Beranda", menu_admin: "Dashboard Seleksi", menu_add: "Kirim Item", menu_logout: "Keluar akun",
@@ -278,7 +278,6 @@
       window.applyLanguage();
     };
 
-    // UI NAVIGATION
     window.showScreen = (id) => {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
@@ -289,7 +288,6 @@
       }
     };
 
-    // SIDEBAR SWIPE LOGIC
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     let touchStartX = 0;
@@ -308,7 +306,6 @@
       }
     });
 
-    // MODAL
     window.closeModal = (id) => {
       const modal = document.getElementById(id);
       modal.querySelector('.modal-card').style.transform = 'scale(0.9)';
@@ -331,7 +328,7 @@
       if(e.key === "Escape") window.closeModal('modal-logout');
     });
 
-    // SISTEM LOGIN (EMAIL/PASSWORD & GOOGLE)
+    // SISTEM LOGIN & DAFTAR EMAIL/PASSWORD YANG DIPERBAIKI (BUKAN GIMIK)
     window.toggleAuthMode = () => {
       isSignUpMode = !isSignUpMode;
       const title = document.getElementById('auth-title-text');
@@ -356,21 +353,43 @@
       const email = document.getElementById('auth-email').value.trim();
       const password = document.getElementById('auth-password').value;
       const errorMsg = document.getElementById('login-error');
+      const btn = document.getElementById('auth-submit-btn');
+      
       errorMsg.innerText = '';
+      errorMsg.style.color = 'red';
 
       if (!email || !password) {
         errorMsg.innerText = 'Email dan Password wajib diisi.';
         return;
       }
 
+      // Animasi Loading
+      btn.disabled = true;
+      btn.innerText = "Loading...";
+
       try {
         if (isSignUpMode) {
+          // Fungsi Asli Daftar Firebase
           await createUserWithEmailAndPassword(auth, email, password);
+          alert("Akun berhasil dibuat! Silakan lanjutkan untuk membuat Username.");
         } else {
+          // Fungsi Asli Login Firebase
           await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (error) {
-        errorMsg.innerText = "Gagal: " + error.message;
+        // Tangkap dan terjemahkan Error dari Firebase
+        if (error.code === 'auth/email-already-in-use') {
+          errorMsg.innerText = "Email sudah terdaftar. Silakan Log in.";
+        } else if (error.code === 'auth/weak-password') {
+          errorMsg.innerText = "Password terlalu pendek (minimal 6 karakter).";
+        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          errorMsg.innerText = "Email atau Password salah.";
+        } else {
+          errorMsg.innerText = "Gagal: " + error.message;
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerText = isSignUpMode ? "Sign up" : "Log in";
       }
     };
 
@@ -467,7 +486,6 @@
       loadPublicItems();
     }
 
-    // REALTIME DATABASE LOGIC (PUBLIC)
     function loadPublicItems() {
       const pubRef = ref(db, 'items_public');
       onValue(pubRef, (snapshot) => {
@@ -504,7 +522,6 @@
       });
     }
 
-    // REALTIME DATABASE LOGIC (PENDING / ADMIN)
     function loadPendingItems() {
       if(!isAdmin) return;
       onValue(ref(db, 'items_pending'), (snapshot) => {
@@ -533,7 +550,6 @@
       });
     }
 
-    // SUBMIT ITEM
     window.submitItem = async () => {
       if (!currentUser) return;
       const title = document.getElementById('add-title').value;
@@ -568,7 +584,6 @@
       }
     };
 
-    // ADMIN ACTIONS
     window.approveItem = async (id) => {
       const snap = await get(ref(db, `items_pending/${id}`));
       if(snap.exists()){
