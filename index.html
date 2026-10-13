@@ -7,7 +7,7 @@
   <style>
     /* BASE UI & COLORS */
     :root {
-      --bg-dark: #121212; --bg-card: #1e1e1e;
+      --bg-dark: #000000; --bg-card: #151515;
       --primary: #ff8c00; --text-light: #f5f5f5; --text-gray: #aaaaaa;
     }
     body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-light); overflow-x: hidden; }
@@ -21,10 +21,10 @@
     /* SIDEBAR */
     #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
     #sidebar { position: fixed; top: 0; left: -300px; width: 78%; max-width: 300px; height: 100vh; background-color: var(--bg-card); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; }
-    .sidebar-profile { padding: 20px; border-bottom: 1px solid #333; text-align: center; }
+    .sidebar-profile { padding: 20px; border-bottom: 1px solid #222; text-align: center; }
     .sidebar-profile img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); }
     .sidebar-menu { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-    .sidebar-menu li { padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .sidebar-menu li { padding: 15px 20px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; gap: 10px; }
     .sidebar-menu li:active { background-color: #333; }
     .badge-admin { background: red; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
     .badge-pending { background: var(--primary); color: #fff; padding: 2px 6px; border-radius: 50%; font-size: 12px; margin-left: auto; }
@@ -37,27 +37,45 @@
     .modal-card h3 { margin-top: 0; }
     .modal-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
     .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
-    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary { background: var(--primary); color: black; }
     .btn-danger { background: #dc3545; color: white; }
-    .btn-gray { background: #555; color: white; }
+    .btn-gray { background: #333; color: white; border: 1px solid #444; }
     
     /* INPUTS & CARDS */
-    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; background: #333; border: 1px solid #555; color: white; border-radius: 6px; }
-    .item-card { background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; }
+    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+    .item-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; border: 1px solid #333; }
     .item-img { width: 100%; height: 150px; object-fit: cover; }
     .item-content { padding: 15px; }
     .label-baru { position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     
     /* FAB & UTILS */
-    .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; color: white; box-shadow: 0 4px 10px rgba(255,140,0,0.5); cursor: pointer; z-index: 90; }
+    .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; color: black; box-shadow: 0 4px 10px rgba(255,140,0,0.5); cursor: pointer; z-index: 90; }
     .hidden { display: none !important; }
+
+    /* CUSTOM LOGIN UI */
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--bg-dark); }
+    .login-box { background-color: #121212; border-radius: 16px; padding: 30px 25px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
+    .login-close { position: absolute; top: 15px; right: 20px; color: #666; cursor: pointer; font-size: 20px; font-weight: bold; }
+    .login-title { text-align: center; font-size: 24px; font-weight: bold; margin: 10px 0 5px 0; }
+    .login-subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 25px; }
+    .login-subtitle span { color: var(--primary); cursor: pointer; font-weight: bold; }
+    .auth-input-group { position: relative; margin-bottom: 15px; }
+    .auth-input-group input { background-color: transparent; border: 1px solid #444; border-radius: 10px; padding: 15px; font-size: 14px; color: white; width: 100%; transition: border-color 0.3s; margin-bottom: 0; }
+    .auth-input-group input:focus { border-color: var(--primary); }
+    .auth-submit-btn { width: 100%; background-color: var(--primary); color: black; font-weight: bold; padding: 15px; border-radius: 10px; border: none; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    .auth-divider { display: flex; align-items: center; margin: 25px 0; }
+    .auth-divider hr { flex: 1; border: none; border-top: 1px solid #333; margin: 0; }
+    .auth-divider span { color: #555; font-size: 12px; padding: 0 10px; }
+    .btn-google { width: 100%; background-color: transparent; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; }
+    .btn-google svg { width: 20px; height: 20px; }
   </style>
 </head>
 <body>
 
   <!-- HEADER -->
   <header id="main-header" class="hidden">
-    <button class="menu-btn" onclick="window.toggleSidebar()">☰</button>
+    <button class="menu-btn" onclick="window.toggleSidebar()">Menu</button>
     <div class="logo-text">StecyMaster</div>
   </header>
 
@@ -65,13 +83,13 @@
   <div id="sidebar-overlay" onclick="window.toggleSidebar()"></div>
   <div id="sidebar">
     <div class="sidebar-profile">
-      <img id="profile-img" src="" alt="Avatar">
+      <img id="profile-img" src="" alt="Avatar" onerror="this.src='https://via.placeholder.com/60?text=U'">
       <h3 id="profile-name" style="margin: 10px 0 5px 0;">Username</h3>
       <div id="profile-role"></div>
     </div>
     <ul class="sidebar-menu">
       <li onclick="window.switchLanguage()">
-        <span style="font-size: 20px;">A/文</span> 
+        <span style="font-size: 18px; font-weight: bold;">ID/EN</span> 
         <span data-i18n="menu_translate">Terjemahan (ID/EN)</span>
       </li>
       <li onclick="window.showScreen('screen-home'); window.toggleSidebar();">
@@ -92,30 +110,59 @@
     </ul>
   </div>
 
-  <!-- LAYAR LOGIN -->
-  <div id="screen-login" class="screen active" style="text-align: center; margin-top: 50px;">
-    <h1 style="color: var(--primary);">StecyMaster</h1>
-    <p data-i18n="login_desc">Forum & Database MCPE Mod</p>
-    <button class="btn btn-primary" onclick="window.loginGoogle()" style="margin-top: 20px;">
-      <span data-i18n="login_btn">Sign in with Google</span>
-    </button>
-    <p id="login-error" style="color: red; margin-top: 10px;"></p>
+  <!-- LAYAR LOGIN BARU -->
+  <div id="screen-login" class="screen active" style="padding: 0;">
+    <div class="login-container">
+      <div class="login-box">
+        <div class="login-close" onclick="console.log('Close clicked')">X</div>
+        
+        <h2 class="login-title" id="auth-title-text">Welcome Back<br>to StecyMaster</h2>
+        <p class="login-subtitle" id="auth-subtitle-text">
+          New to StecyMaster? <span onclick="window.toggleAuthMode()">Sign up</span>
+        </p>
+
+        <div class="auth-input-group">
+          <input type="email" id="auth-email" placeholder="Email address">
+        </div>
+        <div class="auth-input-group">
+          <input type="password" id="auth-password" placeholder="Password">
+        </div>
+
+        <button class="auth-submit-btn" id="auth-submit-btn" onclick="window.processEmailAuth()">Log in</button>
+        <p id="login-error" style="color: red; margin-top: 10px; font-size: 12px; text-align: center;"></p>
+
+        <div class="auth-divider">
+          <hr>
+          <span>or sign in with</span>
+          <hr>
+        </div>
+
+        <button class="btn-google" onclick="window.loginGoogle()">
+          <svg viewBox="0 0 24 24" style="margin-right: 8px;">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- LAYAR BUAT USERNAME -->
   <div id="screen-username" class="screen" style="text-align: center; margin-top: 50px;">
     <h2 data-i18n="create_user_title">Buat Username</h2>
-    <p data-i18n="create_user_desc">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
-    <input type="text" id="input-username" placeholder="Username_Keren">
-    <button class="btn btn-primary" onclick="window.saveUsername()" data-i18n="btn_save">Simpan</button>
-    <p id="username-error" style="color: red; margin-top: 10px;"></p>
+    <p data-i18n="create_user_desc" style="color: var(--text-gray); font-size: 14px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
+    <input type="text" id="input-username" placeholder="Username_Keren" style="background: transparent;">
+    <button class="btn btn-primary" onclick="window.saveUsername()" data-i18n="btn_save" style="width: 100%; padding: 12px; margin-top: 10px;">Simpan</button>
+    <p id="username-error" style="color: red; margin-top: 10px; font-size: 14px;"></p>
     
     <!-- Panel Khusus Admin Utama -->
-    <div id="panel-admin-setup" class="hidden" style="margin-top: 30px; background: #333; padding: 15px; border-radius: 8px;">
-      <h3 style="color: red;">Setup Admin Utama</h3>
-      <p>Email Anda terdeteksi. Salin UID ini ke Firebase Realtime Database <code>/admins/</code></p>
-      <input type="text" id="admin-uid-copy" readonly>
-      <button class="btn btn-gray" onclick="window.copyAdminUID()">Salin UID</button>
+    <div id="panel-admin-setup" class="hidden" style="margin-top: 30px; background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+      <h3 style="color: red; margin-top: 0;">Setup Admin Utama</h3>
+      <p style="font-size: 14px; color: #ccc;">Email Anda terdeteksi. Salin UID ini ke Firebase Realtime Database <code>/admins/</code></p>
+      <input type="text" id="admin-uid-copy" readonly style="background: transparent;">
+      <button class="btn btn-gray" onclick="window.copyAdminUID()" style="width: 100%; padding: 10px;">Salin UID</button>
     </div>
   </div>
 
@@ -123,7 +170,7 @@
   <div id="screen-home" class="screen">
     <h2 data-i18n="home_title">Daftar Item Publik</h2>
     <div id="public-items-container">
-      <p style="text-align: center;" data-i18n="loading">Memuat data...</p>
+      <p style="text-align: center; color: var(--text-gray);" data-i18n="loading">Memuat data...</p>
     </div>
     <!-- FAB ADD -->
     <div class="fab" onclick="window.showScreen('screen-add')">+</div>
@@ -132,23 +179,23 @@
   <!-- LAYAR TAMBAH ITEM -->
   <div id="screen-add" class="screen">
     <h2 data-i18n="add_title">Kirim Item Baru</h2>
-    <input type="text" id="add-title" placeholder="Judul Item" required>
-    <select id="add-cat">
-      <option value="Mod">Mod</option>
-      <option value="Map">Map</option>
-      <option value="Texture">Texture</option>
+    <input type="text" id="add-title" placeholder="Judul Item" required style="background: transparent;">
+    <select id="add-cat" style="background: transparent; color: white;">
+      <option value="Mod" style="background: #222;">Mod</option>
+      <option value="Map" style="background: #222;">Map</option>
+      <option value="Texture" style="background: #222;">Texture</option>
     </select>
-    <textarea id="add-desc-id" placeholder="Deskripsi (Indonesia)" rows="3"></textarea>
-    <textarea id="add-desc-en" placeholder="Description (English)" rows="3"></textarea>
-    <input type="url" id="add-img" placeholder="URL Gambar Preview (https://...)">
+    <textarea id="add-desc-id" placeholder="Deskripsi (Indonesia)" rows="3" style="background: transparent;"></textarea>
+    <textarea id="add-desc-en" placeholder="Description (English)" rows="3" style="background: transparent;"></textarea>
+    <input type="url" id="add-img" placeholder="URL Gambar Preview (https://...)" style="background: transparent;">
     
-    <div style="background: #333; padding: 10px; margin-bottom: 10px; border-radius: 6px;">
-      <p style="margin:0 0 10px 0; font-size: 12px; color: #ccc;" data-i18n="catbox_note">Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah. (Upload langsung sering diblokir browser).</p>
-      <button class="btn btn-gray" onclick="window.open('https://catbox.moe', '_blank')" style="width: 100%; margin-bottom: 10px;" data-i18n="btn_catbox">Buka Catbox.moe</button>
-      <input type="url" id="add-file" placeholder="URL File Download (https://files.catbox.moe/...)">
+    <div style="background: #1a1a1a; border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+      <p style="margin:0 0 10px 0; font-size: 12px; color: #aaa;" data-i18n="catbox_note">Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah. (Upload langsung sering diblokir browser).</p>
+      <button class="btn btn-gray" onclick="window.open('https://catbox.moe', '_blank')" style="width: 100%; margin-bottom: 15px; padding: 10px;" data-i18n="btn_catbox">Buka Catbox.moe</button>
+      <input type="url" id="add-file" placeholder="URL File Download (https://files.catbox.moe/...)" style="background: transparent; margin-bottom: 0;">
     </div>
     
-    <button class="btn btn-primary" onclick="window.submitItem()" data-i18n="btn_submit">Kirim / Publikasikan</button>
+    <button class="btn btn-primary" onclick="window.submitItem()" data-i18n="btn_submit" style="width: 100%; padding: 12px;">Kirim / Publikasikan</button>
   </div>
 
   <!-- LAYAR ADMIN DASHBOARD -->
@@ -162,7 +209,7 @@
     <div class="modal-card">
       <h2 data-i18n="logout_title">Yakin ingin keluar?</h2>
       <div style="margin: 20px 0;">
-        <img id="logout-avatar" src="" style="width: 80px; border-radius: 50%;">
+        <img id="logout-avatar" src="" style="width: 80px; border-radius: 50%; border: 2px solid #444;" onerror="this.src='https://via.placeholder.com/80?text=U'">
         <p id="logout-user" style="font-weight: bold; margin: 10px 0 0 0;"></p>
         <p id="logout-email" style="color: var(--text-gray); margin: 0; font-size: 14px;"></p>
       </div>
@@ -176,13 +223,12 @@
   <!-- FIREBASE MODULAR SDK v10.13.0 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import { getDatabase, ref, onValue, set, get, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-    // Konfigurasi Anda
+    // Konfigurasi Anda (Ganti dengan Config Firebase Anda yang asli)
     const firebaseConfig = {
       projectId: "stecymaster-e285a",
-      // Tambahkan API Key & App ID Anda yang lengkap di sini saat di-host
       // apiKey: "AIzaSy...",
       // authDomain: "stecymaster-e285a.firebaseapp.com",
       // databaseURL: "https://stecymaster-e285a-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -196,6 +242,7 @@
     let currentUser = null;
     let isAdmin = false;
     let currentLang = localStorage.getItem('lang') || 'id';
+    let isSignUpMode = false; // Mode Login atau Daftar
 
     // KAMUS TERJEMAHAN
     const dict = {
@@ -222,7 +269,7 @@
         const key = el.getAttribute('data-i18n');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
       });
-      loadPublicItems(); // re-render item descriptions based on lang
+      loadPublicItems(); 
     };
 
     window.switchLanguage = () => {
@@ -257,7 +304,7 @@
     document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
     document.addEventListener('touchend', e => {
       if (sidebar.style.left === '0px' && touchStartX - e.changedTouches[0].screenX > 50) {
-        window.toggleSidebar(); // swipe left to close
+        window.toggleSidebar();
       }
     });
 
@@ -269,7 +316,7 @@
     };
     
     window.logoutPopup = () => {
-      document.getElementById('logout-avatar').src = currentUser.photoURL;
+      document.getElementById('logout-avatar').src = currentUser.photoURL || '';
       document.getElementById('logout-user').innerText = document.getElementById('profile-name').innerText;
       document.getElementById('logout-email').innerText = currentUser.email;
       const modal = document.getElementById('modal-logout');
@@ -277,16 +324,56 @@
       setTimeout(() => modal.querySelector('.modal-card').style.transform = 'scale(1)', 10);
     };
 
-    // KETIKA KLIK DI LUAR MODAL TUTUP MODAL
     document.getElementById('modal-logout').addEventListener('click', (e) => {
       if(e.target === document.getElementById('modal-logout')) window.closeModal('modal-logout');
     });
-    // ESC tutup modal
     document.addEventListener('keydown', (e) => {
       if(e.key === "Escape") window.closeModal('modal-logout');
     });
 
-    // LOGIN & AUTH
+    // SISTEM LOGIN (EMAIL/PASSWORD & GOOGLE)
+    window.toggleAuthMode = () => {
+      isSignUpMode = !isSignUpMode;
+      const title = document.getElementById('auth-title-text');
+      const subtitle = document.getElementById('auth-subtitle-text');
+      const btn = document.getElementById('auth-submit-btn');
+      const errorMsg = document.getElementById('login-error');
+      
+      errorMsg.innerText = '';
+
+      if (isSignUpMode) {
+        title.innerHTML = "Create Account<br>for StecyMaster";
+        subtitle.innerHTML = 'Already have an account? <span onclick="window.toggleAuthMode()">Log in</span>';
+        btn.innerText = "Sign up";
+      } else {
+        title.innerHTML = "Welcome Back<br>to StecyMaster";
+        subtitle.innerHTML = 'New to StecyMaster? <span onclick="window.toggleAuthMode()">Sign up</span>';
+        btn.innerText = "Log in";
+      }
+    };
+
+    window.processEmailAuth = async () => {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const errorMsg = document.getElementById('login-error');
+      errorMsg.innerText = '';
+
+      if (!email || !password) {
+        errorMsg.innerText = 'Email dan Password wajib diisi.';
+        return;
+      }
+
+      try {
+        if (isSignUpMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (error) {
+        errorMsg.innerText = "Gagal: " + error.message;
+      }
+    };
+
     window.loginGoogle = async () => {
       const provider = new GoogleAuthProvider();
       try {
@@ -300,7 +387,6 @@
       }
     };
 
-    // CEK HASIL REDIRECT (FALLBACK)
     getRedirectResult(auth).catch(err => {
       document.getElementById('login-error').innerText = "Redirect Error: " + err.message;
     });
@@ -316,9 +402,10 @@
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        document.getElementById('profile-img').src = user.photoURL;
+        if(user.photoURL) {
+          document.getElementById('profile-img').src = user.photoURL;
+        }
         
-        // Cek username
         const userRef = ref(db, `users/${user.uid}`);
         const snap = await get(userRef);
         if (snap.exists() && snap.val().username) {
@@ -372,7 +459,7 @@
           isAdmin = true;
           document.getElementById('profile-role').innerHTML = '<span class="badge-admin">ADMIN</span>';
           document.getElementById('menu-admin').classList.remove('hidden');
-          loadPendingItems(); // Mulai memantau pending untuk badge
+          loadPendingItems();
         }
       });
       window.showScreen('screen-home');
@@ -381,20 +468,18 @@
     }
 
     // REALTIME DATABASE LOGIC (PUBLIC)
-    let publicItemsCache = {};
     function loadPublicItems() {
       const pubRef = ref(db, 'items_public');
       onValue(pubRef, (snapshot) => {
         const container = document.getElementById('public-items-container');
         container.innerHTML = '';
         if (!snapshot.exists()) {
-          container.innerHTML = '<p style="text-align:center">Tidak ada item.</p>';
+          container.innerHTML = '<p style="text-align:center; color: var(--text-gray);">Tidak ada item.</p>';
           return;
         }
         const items = [];
         snapshot.forEach(child => { items.push({ id: child.key, ...child.val() }); });
         
-        // Urut terbaru (createdAt)
         items.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
 
         items.forEach(item => {
@@ -406,12 +491,12 @@
               <img src="${item.url_img}" class="item-img" onerror="this.src='https://via.placeholder.com/300x150?text=No+Image'">
               <div class="item-content">
                 <h3 style="margin:0 0 10px 0;">${item.title}</h3>
-                <p style="margin:0 0 10px 0; font-size:14px; color:var(--text-gray);">${desc}</p>
+                <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-gray);">${desc}</p>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="background:var(--primary); padding:2px 8px; border-radius:12px; font-size:12px;">${item.category}</span>
-                  <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="text-decoration:none; padding:5px 15px;">Download</a>
+                  <span style="background:#333; padding:4px 10px; border-radius:12px; font-size:12px; border: 1px solid #555;">${item.category}</span>
+                  <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="text-decoration:none; padding:8px 15px; border-radius:6px; color:black;">Download</a>
                 </div>
-                ${isAdmin ? `<button class="btn btn-danger" style="width:100%; margin-top:10px; padding:5px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus (Admin)</button>` : ''}
+                ${isAdmin ? `<button class="btn btn-danger" style="width:100%; margin-top:15px; padding:10px; border-radius:6px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus (Admin)</button>` : ''}
               </div>
             </div>`;
            container.innerHTML += html;
@@ -431,9 +516,9 @@
             count++;
             const item = child.val();
             container.innerHTML += `
-              <div class="item-card" style="border: 1px solid #ffcc00;">
+              <div class="item-card" style="border: 1px solid var(--primary);">
                 <div class="item-content">
-                  <h4>${item.title} <span style="font-size:12px; font-weight:normal;">(dari: ${item.username})</span></h4>
+                  <h4 style="margin-top: 0;">${item.title} <br><span style="font-size:12px; font-weight:normal; color: var(--text-gray);">(dari: ${item.username})</span></h4>
                   <div class="modal-btns">
                     <button class="btn" style="background:#28a745; color:white;" onclick="window.approveItem('${child.key}')">Setuju</button>
                     <button class="btn btn-danger" onclick="window.rejectItem('${child.key}')">Tolak</button>
@@ -442,7 +527,7 @@
               </div>`;
           });
         } else {
-          container.innerHTML = '<p>Tidak ada kiriman baru.</p>';
+          container.innerHTML = '<p style="color: var(--text-gray);">Tidak ada kiriman baru.</p>';
         }
         document.getElementById('pending-count').innerText = count;
       });
@@ -470,12 +555,10 @@
 
       try {
         if (isAdmin) {
-          // Admin: Langsung masuk public
           await push(ref(db, 'items_public'), data);
           alert("Item berhasil dipublikasikan!");
           window.showScreen('screen-home');
         } else {
-          // User: Masuk pending
           await push(ref(db, 'items_pending'), data);
           alert("Item terkirim! Menunggu persetujuan admin.");
           window.showScreen('screen-home');
@@ -497,7 +580,6 @@
     window.rejectItem = async (id) => {
       const alasan = prompt("Alasan penolakan:");
       if (alasan !== null) {
-        // (Opsional) Simpan ke /items_rejected/{id} agar user bisa lihat alasan
         await remove(ref(db, `items_pending/${id}`));
       }
     };
@@ -511,7 +593,7 @@
       }
     };
 
-    window.applyLanguage(); // init bahasa
+    window.applyLanguage();
   </script>
 </body>
 </html>
