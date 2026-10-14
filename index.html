@@ -3,610 +3,178 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>StecyMaster MCPE Forum</title>
-  <style>
-    /* BASE UI & COLORS */
-    :root {
-      --bg-dark: #000000; --bg-card: #151515;
-      --primary: #ff8c00; --text-light: #f5f5f5; --text-gray: #aaaaaa;
-    }
-    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-light); overflow-x: hidden; }
-    * { box-sizing: border-box; }
-    
-    /* HEADER & SIDEBAR */
-    header { display: flex; align-items: center; padding: 15px; background-color: var(--bg-card); border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
-    .menu-btn { background: none; border: none; color: var(--text-light); font-size: 24px; cursor: pointer; margin-right: 15px; }
-    .logo-text { font-size: 20px; font-weight: bold; color: var(--primary); flex-grow: 1; }
-    
-    /* SIDEBAR */
-    #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
-    #sidebar { position: fixed; top: 0; left: -300px; width: 78%; max-width: 300px; height: 100vh; background-color: var(--bg-card); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; }
-    .sidebar-profile { padding: 20px; border-bottom: 1px solid #222; text-align: center; }
-    .sidebar-profile img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); }
-    .sidebar-menu { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-    .sidebar-menu li { padding: 15px 20px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-    .sidebar-menu li:active { background-color: #333; }
-    .badge-admin { background: red; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-    .badge-pending { background: var(--primary); color: #fff; padding: 2px 6px; border-radius: 50%; font-size: 12px; margin-left: auto; }
-
-    /* LAYAR & MODAL */
-    .screen { display: none; padding: 20px; padding-bottom: 80px; }
-    .screen.active { display: block; }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
-    .modal-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 2px solid var(--primary); width: 90%; max-width: 400px; text-align: center; transform: scale(0.9); transition: transform 0.3s; }
-    .modal-card h3 { margin-top: 0; }
-    .modal-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
-    .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
-    .btn-primary { background: var(--primary); color: black; }
-    .btn-danger { background: #dc3545; color: white; }
-    .btn-gray { background: #333; color: white; border: 1px solid #444; }
-    
-    /* INPUTS & CARDS */
-    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; outline: none; }
-    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
-    .item-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; border: 1px solid #333; }
-    .item-img { width: 100%; height: 150px; object-fit: cover; }
-    .item-content { padding: 15px; }
-    .label-baru { position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    
-    /* FAB & UTILS */
-    .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; color: black; box-shadow: 0 4px 10px rgba(255,140,0,0.5); cursor: pointer; z-index: 90; }
-    .hidden { display: none !important; }
-
-    /* CUSTOM LOGIN UI */
-    .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--bg-dark); }
-    .login-box { background-color: #121212; border-radius: 16px; padding: 30px 25px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
-    .login-title { text-align: center; font-size: 24px; font-weight: bold; margin: 10px 0 5px 0; }
-    .login-subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 25px; }
-    .login-subtitle span { color: var(--primary); cursor: pointer; font-weight: bold; user-select: none; padding: 10px 5px; }
-    .auth-input-group { position: relative; margin-bottom: 15px; }
-    .auth-input-group input { background-color: transparent; border: 1px solid #444; border-radius: 10px; padding: 15px; font-size: 14px; color: white; width: 100%; transition: border-color 0.3s; margin-bottom: 0; }
-    .auth-input-group input:focus { border-color: var(--primary); }
-    .auth-submit-btn { width: 100%; background-color: var(--primary); color: black; font-weight: bold; padding: 15px; border-radius: 10px; border: none; font-size: 16px; cursor: pointer; margin-top: 10px; }
-    .auth-submit-btn:disabled { background-color: #555; cursor: not-allowed; }
-    .auth-divider { display: flex; align-items: center; margin: 25px 0; }
-    .auth-divider hr { flex: 1; border: none; border-top: 1px solid #333; margin: 0; }
-    .auth-divider span { color: #555; font-size: 12px; padding: 0 10px; }
-    .btn-google { width: 100%; background-color: transparent; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; }
-    .btn-google svg { width: 20px; height: 20px; }
-  </style>
+  <title>StecyMaster Forum</title>
+  
+  <!-- Panggil file CSS Baru di sini -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header id="main-header" class="hidden">
-    <button class="menu-btn" onclick="window.toggleSidebar()">Menu</button>
-    <div class="logo-text">StecyMaster</div>
-  </header>
+  <!-- ================= LAYAR LOGIN / SIGN UP ================= -->
+  <div id="screen-login" class="app-container screen">
+    <div style="margin: auto; padding: 30px; background: var(--bg-surface); border-radius: 12px; width: 90%; max-width: 400px; text-align: center; margin-top: 10vh; border: 1px solid var(--border-color);">
+      <h2 class="text-primary font-bold" id="auth-title-text" style="font-size: 24px; margin-bottom: 5px;">Welcome Back</h2>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom: 25px;">
+        <span id="auth-subtitle-text">New to StecyMaster?</span>
+        <span onclick="window.toggleAuthMode()" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;">Tukar</span>
+      </p>
 
-  <!-- SIDEBAR -->
-  <div id="sidebar-overlay" onclick="window.toggleSidebar()"></div>
-  <div id="sidebar">
-    <div class="sidebar-profile">
-      <img id="profile-img" src="" alt="Avatar" onerror="this.src='https://via.placeholder.com/60?text=U'">
-      <h3 id="profile-name" style="margin: 10px 0 5px 0;">Username</h3>
+      <input type="email" id="auth-email" placeholder="Email address" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+      <input type="password" id="auth-password" placeholder="Password (Min 6 chars)" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+      
+      <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()">Log In</button>
+      <p id="login-error" class="text-danger" style="margin-top: 10px; font-size: 13px;"></p>
+
+      <div class="flex items-center" style="margin: 20px 0; gap: 10px;">
+        <hr style="flex:1; border-color:var(--border-color);">
+        <span style="color:var(--text-muted); font-size:12px;">atau login pakai</span>
+        <hr style="flex:1; border-color:var(--border-color);">
+      </div>
+
+      <button class="btn btn-secondary" onclick="window.loginGoogle()">Google</button>
+    </div>
+  </div>
+
+  <!-- ================= LAYAR BUAT USERNAME ================= -->
+  <div id="screen-username" class="app-container screen hidden" style="justify-content: center; padding: 20px;">
+    <div style="background: var(--bg-surface); padding: 30px; border-radius: 12px; text-align: center; border: 1px solid var(--border-color);">
+      <h2 class="text-primary font-bold" style="margin-bottom: 10px;">Buat Username</h2>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
+      
+      <input type="text" id="input-username" placeholder="Username_Keren" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+      <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()">Simpan Username</button>
+      <p id="username-error" class="text-danger" style="margin-top: 10px; font-size: 14px;"></p>
+      
+      <!-- Panel Khusus Setup Admin Utama -->
+      <div id="panel-admin-setup" class="hidden" style="margin-top: 20px; background: rgba(244,67,54,0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--danger); text-align: left;">
+        <h4 class="text-danger" style="margin-bottom: 5px;">Setup Admin Utama</h4>
+        <p style="font-size: 12px; color: #ccc; margin-bottom: 10px;">Email admin terdeteksi. Salin UID ini ke Firebase <code>/admins/</code></p>
+        <div class="flex" style="gap: 10px;">
+          <input type="text" id="admin-uid-copy" readonly style="flex:1; background: var(--bg-dark); color: white; border: none; padding: 8px; border-radius: 4px;">
+          <button class="btn" style="background: var(--danger); color: white; padding: 8px 12px; flex: none;" onclick="window.copyAdminUID()">Salin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LAYAR USER (HOME) ================= -->
+  <div id="screen-home" class="app-container screen hidden">
+    <!-- Header -->
+    <header class="flex items-center justify-between">
+      <div class="logo font-bold"><span class="text-primary">Stecy</span><span style="color: white;">Master Forum</span></div>
+      <!-- Tombol Admin pindah ke Header agar rapi -->
+      <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')">
+         <span style="background: var(--primary); color: black; font-size:11px; padding:4px 8px; border-radius:12px; font-weight:bold;">Admin Panel</span>
+      </button>
+    </header>
+
+    <!-- Kategori Horizontal -->
+    <div class="category-container">
+      <button class="chip active">Semua</button>
+      <button class="chip">Mod</button>
+      <button class="chip">Texture</button>
+      <button class="chip">Map</button>
+    </div>
+
+    <!-- List Item Publik (Gabungan FB + GitHub) -->
+    <div id="public-items-container" class="content-list">
+      <p style="text-align:center; color: var(--text-muted);">Memuat konten...</p>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="window.switchScreen('screen-home')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" onclick="window.switchScreen('screen-add')">
+        <!-- Icon Plus / Upload -->
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Kirim Item</span>
+      </button>
+      <button class="nav-item" onclick="window.switchScreen('screen-profile')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profil</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ================= LAYAR PROFIL ================= -->
+  <div id="screen-profile" class="app-container screen hidden">
+    <header class="flex items-center" style="gap: 15px;">
+      <div class="logo font-bold">Profil Saya</div>
+    </header>
+    <div class="profile-header">
+      <div class="avatar">
+        <img id="profile-img" src="https://via.placeholder.com/80" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+      </div>
+      <h2 id="profile-name" class="font-bold">Player Name</h2>
       <div id="profile-role"></div>
-    </div>
-    <ul class="sidebar-menu">
-      <li onclick="window.switchLanguage()">
-        <span style="font-size: 18px; font-weight: bold;">ID/EN</span> 
-        <span data-i18n="menu_translate">Terjemahan (ID/EN)</span>
-      </li>
-      <li onclick="window.showScreen('screen-home'); window.toggleSidebar();">
-        <span data-i18n="menu_home">Beranda</span>
-      </li>
-      <li id="menu-admin" class="hidden" onclick="window.showScreen('screen-admin'); window.toggleSidebar();">
-        <span data-i18n="menu_admin">Dashboard Seleksi</span> <span class="badge-pending" id="pending-count">0</span>
-      </li>
-      <li onclick="window.showScreen('screen-add'); window.toggleSidebar();">
-        <span data-i18n="menu_add">Kirim Item</span>
-      </li>
-      <li onclick="window.open('https://youtube.com/@stecymc', '_blank')">
-        YouTube Official
-      </li>
-      <li onclick="window.logoutPopup(); window.toggleSidebar();">
-        <span data-i18n="menu_logout">Keluar akun</span>
-      </li>
-    </ul>
-  </div>
-
-  <!-- LAYAR LOGIN/REGISTER -->
-  <div id="screen-login" class="screen active" style="padding: 0;">
-    <div class="login-container">
-      <div class="login-box">        
-        <h2 class="login-title" id="auth-title-text">Welcome Back<br>to StecyMaster</h2>
-        <p class="login-subtitle" id="auth-subtitle-text">
-          New to StecyMaster? <span onclick="window.toggleAuthMode()">Sign up</span>
-        </p>
-
-        <div class="auth-input-group">
-          <input type="email" id="auth-email" placeholder="Email address">
-        </div>
-        <div class="auth-input-group">
-          <input type="password" id="auth-password" placeholder="Password (Min 6 chars)">
-        </div>
-
-        <button class="auth-submit-btn" id="auth-submit-btn" onclick="window.processEmailAuth()">Log in</button>
-        <p id="login-error" style="color: red; margin-top: 15px; font-size: 13px; text-align: center;"></p>
-
-        <div class="auth-divider">
-          <hr>
-          <span>or sign in with</span>
-          <hr>
-        </div>
-
-        <button class="btn-google" onclick="window.loginGoogle()">
-          <svg viewBox="0 0 24 24" style="margin-right: 8px;">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- LAYAR BUAT USERNAME -->
-  <div id="screen-username" class="screen" style="text-align: center; margin-top: 50px;">
-    <h2 data-i18n="create_user_title">Buat Username</h2>
-    <p data-i18n="create_user_desc" style="color: var(--text-gray); font-size: 14px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
-    <input type="text" id="input-username" placeholder="Username_Keren" style="background: transparent;">
-    <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()" data-i18n="btn_save" style="width: 100%; padding: 12px; margin-top: 10px;">Simpan Username</button>
-    <p id="username-error" style="color: red; margin-top: 10px; font-size: 14px;"></p>
-    
-    <!-- Panel Khusus Admin Utama -->
-    <div id="panel-admin-setup" class="hidden" style="margin-top: 30px; background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
-      <h3 style="color: red; margin-top: 0;">Setup Admin Utama</h3>
-      <p style="font-size: 14px; color: #ccc;">Email Anda terdeteksi. Salin UID ini ke Firebase Realtime Database <code>/admins/</code></p>
-      <input type="text" id="admin-uid-copy" readonly style="background: transparent;">
-      <button class="btn btn-gray" onclick="window.copyAdminUID()" style="width: 100%; padding: 10px;">Salin UID</button>
-    </div>
-  </div>
-
-  <!-- LAYAR BERANDA -->
-  <div id="screen-home" class="screen">
-    <h2 data-i18n="home_title">Daftar Item Publik</h2>
-    <div id="public-items-container">
-      <p style="text-align: center; color: var(--text-gray);" data-i18n="loading">Memuat data...</p>
-    </div>
-    <!-- FAB ADD -->
-    <div class="fab" onclick="window.showScreen('screen-add')">+</div>
-  </div>
-
-  <!-- LAYAR TAMBAH ITEM -->
-  <div id="screen-add" class="screen">
-    <h2 data-i18n="add_title">Kirim Item Baru</h2>
-    <input type="text" id="add-title" placeholder="Judul Item" required style="background: transparent;">
-    <select id="add-cat" style="background: transparent; color: white;">
-      <option value="Mod" style="background: #222;">Mod</option>
-      <option value="Map" style="background: #222;">Map</option>
-      <option value="Texture" style="background: #222;">Texture</option>
-    </select>
-    <textarea id="add-desc-id" placeholder="Deskripsi (Indonesia)" rows="3" style="background: transparent;"></textarea>
-    <textarea id="add-desc-en" placeholder="Description (English)" rows="3" style="background: transparent;"></textarea>
-    <input type="url" id="add-img" placeholder="URL Gambar Preview (https://...)" style="background: transparent;">
-    
-    <div style="background: #1a1a1a; border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-      <p style="margin:0 0 10px 0; font-size: 12px; color: #aaa;" data-i18n="catbox_note">Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah.</p>
-      <button class="btn btn-gray" onclick="window.open('https://catbox.moe', '_blank')" style="width: 100%; margin-bottom: 15px; padding: 10px;" data-i18n="btn_catbox">Buka Catbox.moe</button>
-      <input type="url" id="add-file" placeholder="URL File Download (https://files.catbox.moe/...)" style="background: transparent; margin-bottom: 0;">
+      <button class="btn" style="background:var(--bg-elevated); color:white; border:1px solid var(--border-color); margin-top:20px; width:150px; margin-left:auto; margin-right:auto;" onclick="window.confirmLogout()">Keluar Akun</button>
     </div>
     
-    <button class="btn btn-primary" onclick="window.submitItem()" data-i18n="btn_submit" style="width: 100%; padding: 12px;">Kirim / Publikasikan</button>
+    <nav class="bottom-nav">
+      <button class="nav-item" onclick="window.switchScreen('screen-home')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" onclick="window.switchScreen('screen-add')">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Kirim Item</span>
+      </button>
+      <button class="nav-item active">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profil</span>
+      </button>
+    </nav>
   </div>
 
-  <!-- LAYAR ADMIN DASHBOARD -->
-  <div id="screen-admin" class="screen">
-    <h2 data-i18n="admin_title">Dashboard Seleksi</h2>
-    <div id="pending-items-container"></div>
-  </div>
-
-  <!-- MODAL LOGOUT -->
-  <div id="modal-logout" class="modal-overlay">
-    <div class="modal-card">
-      <h2 data-i18n="logout_title">Yakin ingin keluar?</h2>
-      <div style="margin: 20px 0;">
-        <img id="logout-avatar" src="" style="width: 80px; border-radius: 50%; border: 2px solid #444;" onerror="this.src='https://via.placeholder.com/80?text=U'">
-        <p id="logout-user" style="font-weight: bold; margin: 10px 0 0 0;"></p>
-        <p id="logout-email" style="color: var(--text-gray); margin: 0; font-size: 14px;"></p>
-      </div>
-      <div class="modal-btns">
-        <button class="btn btn-gray" onclick="window.closeModal('modal-logout')" data-i18n="btn_cancel">Batal</button>
-        <button class="btn btn-danger" onclick="window.confirmLogout()" data-i18n="btn_logout">Keluar</button>
-      </div>
+  <!-- ================= LAYAR TAMBAH ITEM ================= -->
+  <div id="screen-add" class="app-container screen hidden">
+    <header class="flex items-center justify-between">
+      <button class="header-btn" onclick="window.switchScreen('screen-home')">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="logo font-bold">Kirim Item Baru</div>
+      <div style="width:24px;"></div> <!-- Spacer -->
+    </header>
+    <div style="padding: 20px;">
+      <input type="text" id="add-title" placeholder="Judul Item" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+      <select id="add-cat" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+        <option value="Mod">Mod</option>
+        <option value="Texture">Texture</option>
+        <option value="Map">Map</option>
+      </select>
+      <input type="text" id="add-version" placeholder="Versi MCPE (opsional)" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+      <textarea id="add-desc" placeholder="Deskripsi Singkat" rows="3" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;"></textarea>
+      <input type="url" id="add-img" placeholder="URL Gambar (https://...)" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+      <input type="url" id="add-file" placeholder="URL File Download" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+      
+      <button class="btn btn-primary" onclick="window.submitItem()">Kirim Sekarang</button>
     </div>
   </div>
 
-  <!-- FIREBASE MODULAR SDK v10.13.0 -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
-
-    // --- KONFIGURASI FIREBASE BARU ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyDKAeiozNSKsrt2m91D0utim2VvddzE-cw",
-      authDomain: "stetecymasterfire.firebaseapp.com",
-      projectId: "stetecymasterfire",
-      storageBucket: "stetecymasterfire.firebasestorage.app",
-      messagingSenderId: "636144676167",
-      appId: "1:636144676167:web:a4c658d64778d5323b3062",
-      
-      // PERHATIAN: Parameter di bawah ini WAJIB ditambahkan untuk Realtime Database. 
-      // Jika server kamu dibuat di Singapura (asia-southeast1), gunakan yang ini. 
-      // Jika dibuat di Amerika Serikat, hapus ".asia-southeast1.firebasedatabase.app" dan ganti dengan ".firebaseio.com"
-      databaseURL: "https://stetecymasterfire-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    setPersistence(auth, browserLocalPersistence);
-
-    let currentUser = null;
-    let isAdmin = false;
-    let currentLang = localStorage.getItem('lang') || 'id';
-    let isSignUpMode = false;
-
-    // TERJEMAHAN
-    const dict = {
-      'id': {
-        menu_translate: "Terjemahan (ID/EN)", menu_home: "Beranda", menu_admin: "Dashboard Seleksi", menu_add: "Kirim Item", menu_logout: "Keluar akun",
-        create_user_title: "Buat Username", create_user_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).", btn_save: "Simpan Username",
-        home_title: "Daftar Item Publik", loading: "Memuat data...",
-        add_title: "Kirim Item Baru", catbox_note: "Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah.", btn_catbox: "Buka Catbox.moe", btn_submit: "Kirim / Publikasikan",
-        admin_title: "Dashboard Seleksi", logout_title: "Yakin ingin keluar?", btn_cancel: "Batal", btn_logout: "Keluar"
-      },
-      'en': {
-        menu_translate: "Translate (ID/EN)", menu_home: "Home", menu_admin: "Selection Dashboard", menu_add: "Submit Item", menu_logout: "Logout",
-        create_user_title: "Create Username", create_user_desc: "Letters, numbers, underscore only (3-16 chars).", btn_save: "Save Username",
-        home_title: "Public Items", loading: "Loading data...",
-        add_title: "Submit New Item", catbox_note: "Use Catbox.moe to upload files and paste the URL below.", btn_catbox: "Open Catbox.moe", btn_submit: "Submit / Publish",
-        admin_title: "Selection Dashboard", logout_title: "Are you sure you want to logout?", btn_cancel: "Cancel", btn_logout: "Logout"
-      }
-    };
-
-    window.applyLanguage = () => {
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
-      });
-      if(currentUser) loadPublicItems(); 
-    };
-
-    window.switchLanguage = () => {
-      currentLang = currentLang === 'id' ? 'en' : 'id';
-      localStorage.setItem('lang', currentLang);
-      window.applyLanguage();
-    };
-
-    window.showScreen = (id) => {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      if (id !== 'screen-login' && id !== 'screen-username') {
-        document.getElementById('main-header').classList.remove('hidden');
-      } else {
-        document.getElementById('main-header').classList.add('hidden');
-      }
-    };
-
-    // SIDEBAR & MODAL
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    window.toggleSidebar = () => {
-      const isOpen = sidebar.style.left === '0px';
-      sidebar.style.left = isOpen ? '-300px' : '0px';
-      overlay.style.display = isOpen ? 'none' : 'block';
-      setTimeout(() => overlay.style.opacity = isOpen ? '0' : '1', 10);
-    };
-
-    window.closeModal = (id) => {
-      const modal = document.getElementById(id);
-      modal.querySelector('.modal-card').style.transform = 'scale(0.9)';
-      setTimeout(() => modal.style.display = 'none', 200);
-    };
+  <!-- ================= LAYAR ADMIN (SELEKSI) ================= -->
+  <div id="screen-admin" class="app-container screen hidden">
+    <header class="flex items-center justify-between">
+      <button class="header-btn" onclick="window.switchScreen('screen-home')">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="logo font-bold">Panel Admin</div>
+      <div style="width:24px;"></div>
+    </header>
     
-    window.logoutPopup = () => {
-      document.getElementById('logout-avatar').src = currentUser.photoURL || 'https://via.placeholder.com/80?text=U';
-      document.getElementById('logout-user').innerText = document.getElementById('profile-name').innerText;
-      document.getElementById('logout-email').innerText = currentUser.email;
-      const modal = document.getElementById('modal-logout');
-      modal.style.display = 'flex';
-      setTimeout(() => modal.querySelector('.modal-card').style.transform = 'scale(1)', 10);
-    };
-    document.getElementById('modal-logout').addEventListener('click', (e) => {
-      if(e.target === document.getElementById('modal-logout')) window.closeModal('modal-logout');
-    });
+    <!-- Tab Internal Admin -->
+    <div class="profile-tabs" style="background:var(--bg-surface);">
+      <div class="tab active" style="flex:1; border-bottom:2px solid var(--primary); color:var(--primary); padding:15px; text-align:center; font-weight:bold;">Antrean (<span id="pending-count">0</span>)</div>
+    </div>
 
-    // ALUR LOGIN EMAIL/PASSWORD
-    window.toggleAuthMode = () => {
-      isSignUpMode = !isSignUpMode;
-      const title = document.getElementById('auth-title-text');
-      const subtitle = document.getElementById('auth-subtitle-text');
-      const btn = document.getElementById('auth-submit-btn');
-      document.getElementById('login-error').innerText = '';
+    <div id="pending-items-container" class="content-list" style="padding-top: 20px;">
+      <p style="text-align:center; color: var(--text-muted);">Tidak ada kiriman baru.</p>
+    </div>
+  </div>
 
-      if (isSignUpMode) {
-        title.innerHTML = "Create Account<br>for StecyMaster";
-        subtitle.innerHTML = 'Already have an account? <span onclick="window.toggleAuthMode()">Log in</span>';
-        btn.innerText = "Sign up";
-      } else {
-        title.innerHTML = "Welcome Back<br>to StecyMaster";
-        subtitle.innerHTML = 'New to StecyMaster? <span onclick="window.toggleAuthMode()">Sign up</span>';
-        btn.innerText = "Log in";
-      }
-    };
-
-    window.processEmailAuth = async () => {
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
-      const errorMsg = document.getElementById('login-error');
-      const btn = document.getElementById('auth-submit-btn');
-      
-      errorMsg.innerText = '';
-      if (!email || !password) { errorMsg.innerText = 'Email dan Password wajib diisi.'; return; }
-
-      btn.disabled = true;
-      btn.innerText = "Loading...";
-
-      try {
-        if (isSignUpMode) {
-          await createUserWithEmailAndPassword(auth, email, password);
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
-        }
-      } catch (error) {
-        if (error.code === 'auth/email-already-in-use') errorMsg.innerText = "Email sudah terdaftar. Silakan Log in.";
-        else if (error.code === 'auth/weak-password') errorMsg.innerText = "Password terlalu pendek (minimal 6 karakter).";
-        else if (error.code === 'auth/invalid-credential') errorMsg.innerText = "Email atau Password salah.";
-        else errorMsg.innerText = "Gagal: " + error.message;
-        
-        btn.disabled = false;
-        btn.innerText = isSignUpMode ? "Sign up" : "Log in";
-      }
-    };
-
-    // ALUR LOGIN GOOGLE
-    window.loginGoogle = async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
-           signInWithRedirect(auth, provider);
-        } else {
-           document.getElementById('login-error').innerText = "Login gagal: " + error.message;
-        }
-      }
-    };
-    getRedirectResult(auth).catch(err => { document.getElementById('login-error').innerText = "Redirect Error: " + err.message; });
-
-    window.confirmLogout = () => {
-      signOut(auth).then(() => {
-        window.closeModal('modal-logout');
-        isAdmin = false;
-        currentUser = null;
-        window.showScreen('screen-login');
-        document.getElementById('auth-submit-btn').disabled = false;
-        document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign up" : "Log in";
-      });
-    };
-
-    // PEMANTAUAN STATUS LOGIN (ALUR UTAMA)
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('profile-img').src = user.photoURL || 'https://via.placeholder.com/60?text=U';
-        
-        const userRef = ref(db, `users/${user.uid}`);
-        const snap = await get(userRef);
-        
-        if (snap.exists() && snap.val().username) {
-           document.getElementById('profile-name').innerText = snap.val().username;
-           checkAdminStatus();
-        } else {
-           window.showScreen('screen-username');
-           
-           if (user.email === 'hamdisyarud@gmail.com') {
-             document.getElementById('panel-admin-setup').classList.remove('hidden');
-             document.getElementById('admin-uid-copy').value = user.uid;
-           }
-        }
-      } else {
-        window.showScreen('screen-login');
-      }
-    });
-
-    window.copyAdminUID = () => {
-      const uidInput = document.getElementById('admin-uid-copy');
-      uidInput.select();
-      document.execCommand('copy');
-      alert("UID disalin! Masukkan ke JSON /admins/ di Firebase Console.");
-    };
-
-    // ALUR BUAT USERNAME BARU
-    window.saveUsername = async () => {
-      const username = document.getElementById('input-username').value.trim();
-      const errEl = document.getElementById('username-error');
-      const btnSave = document.getElementById('btn-save-username');
-      
-      if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
-         errEl.innerText = "Format salah (3-16 huruf/angka/_)"; return;
-      }
-      
-      btnSave.disabled = true;
-      btnSave.innerText = "Menyimpan...";
-      
-      try {
-        const usernameRef = ref(db, `usernames/${username}`);
-        const unSnap = await get(usernameRef);
-        
-        if (unSnap.exists() && unSnap.val() !== currentUser.uid) {
-           errEl.innerText = "Username sudah dipakai! Pilih yang lain."; 
-           btnSave.disabled = false;
-           btnSave.innerText = "Simpan Username";
-           return;
-        }
-        
-        await set(usernameRef, currentUser.uid);
-        await set(ref(db, `users/${currentUser.uid}/username`), username);
-        
-        document.getElementById('profile-name').innerText = username;
-        checkAdminStatus();
-      } catch (e) {
-        errEl.innerText = "Gagal menyimpan: Pastikan Rules Database sudah benar diperbarui.";
-        btnSave.disabled = false;
-        btnSave.innerText = "Simpan Username";
-      }
-    };
-
-    // CEK STATUS ADMIN & LOAD DATA
-    async function checkAdminStatus() {
-      const adminRef = ref(db, `admins/${currentUser.uid}`);
-      onValue(adminRef, (snap) => {
-        if (snap.exists() && snap.val() === true) {
-          isAdmin = true;
-          document.getElementById('profile-role').innerHTML = '<span class="badge-admin">ADMIN</span>';
-          document.getElementById('menu-admin').classList.remove('hidden');
-          loadPendingItems();
-        } else {
-          isAdmin = false;
-          document.getElementById('profile-role').innerHTML = '';
-          document.getElementById('menu-admin').classList.add('hidden');
-        }
-      });
-      
-      window.showScreen('screen-home');
-      window.applyLanguage();
-      loadPublicItems();
-    }
-
-    // LOAD ITEM PUBLIK
-    function loadPublicItems() {
-      const pubRef = ref(db, 'items_public');
-      onValue(pubRef, (snapshot) => {
-        const container = document.getElementById('public-items-container');
-        container.innerHTML = '';
-        if (!snapshot.exists()) {
-          container.innerHTML = '<p style="text-align:center; color: var(--text-gray);">Belum ada item yang dipublikasikan.</p>';
-          return;
-        }
-        
-        const items = [];
-        snapshot.forEach(child => { items.push({ id: child.key, ...child.val() }); });
-        items.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-        items.forEach(item => {
-           const isBaru = (Date.now() - item.createdAt) < 86400000;
-           const desc = currentLang === 'en' ? (item.desc_en || item.desc_id) : item.desc_id;
-           let html = `
-            <div class="item-card">
-              ${isBaru ? '<span class="label-baru">BARU</span>' : ''}
-              <img src="${item.url_img}" class="item-img" onerror="this.src='https://via.placeholder.com/300x150?text=No+Image'">
-              <div class="item-content">
-                <h3 style="margin:0 0 10px 0;">${item.title}</h3>
-                <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-gray); line-height: 1.4;">${desc}</p>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="background:#333; padding:4px 10px; border-radius:12px; font-size:12px; border: 1px solid #555;">${item.category}</span>
-                  <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="text-decoration:none; padding:8px 15px; border-radius:6px; color:black;">Download</a>
-                </div>
-                ${isAdmin ? `<button class="btn btn-danger" style="width:100%; margin-top:15px; padding:10px; border-radius:6px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus (Admin)</button>` : ''}
-              </div>
-            </div>`;
-           container.innerHTML += html;
-        });
-      });
-    }
-
-    // LOAD ITEM PENDING (KHUSUS ADMIN)
-    function loadPendingItems() {
-      if(!isAdmin) return;
-      onValue(ref(db, 'items_pending'), (snapshot) => {
-        const container = document.getElementById('pending-items-container');
-        container.innerHTML = '';
-        let count = 0;
-        if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            count++;
-            const item = child.val();
-            container.innerHTML += `
-              <div class="item-card" style="border: 1px solid var(--primary);">
-                <div class="item-content">
-                  <h4 style="margin-top: 0;">${item.title} <br><span style="font-size:12px; font-weight:normal; color: var(--text-gray);">(dari: ${item.username})</span></h4>
-                  <div class="modal-btns">
-                    <button class="btn" style="background:#28a745; color:white;" onclick="window.approveItem('${child.key}')">Setuju</button>
-                    <button class="btn btn-danger" onclick="window.rejectItem('${child.key}')">Tolak</button>
-                  </div>
-                </div>
-              </div>`;
-          });
-        } else {
-          container.innerHTML = '<p style="color: var(--text-gray);">Tidak ada kiriman baru.</p>';
-        }
-        document.getElementById('pending-count').innerText = count;
-      });
-    }
-
-    // ALUR SUBMIT ITEM
-    window.submitItem = async () => {
-      if (!currentUser) return;
-      const title = document.getElementById('add-title').value;
-      const cat = document.getElementById('add-cat').value;
-      const desc_id = document.getElementById('add-desc-id').value;
-      const desc_en = document.getElementById('add-desc-en').value;
-      const img = document.getElementById('add-img').value;
-      const file = document.getElementById('add-file').value;
-
-      if (!title || !img || !file) { alert("Judul, Gambar, dan File wajib diisi!"); return; }
-      if (!img.startsWith('https://') || !file.startsWith('https://')) { alert("URL harus dimulai dengan https://"); return; }
-
-      const data = {
-        title: title, category: cat, desc_id: desc_id, desc_en: desc_en,
-        url_img: img, url_file: file,
-        uid: currentUser.uid, username: document.getElementById('profile-name').innerText,
-        createdAt: serverTimestamp()
-      };
-
-      try {
-        if (isAdmin) {
-          await push(ref(db, 'items_public'), data);
-          alert("Item berhasil dipublikasikan langsung oleh Admin!");
-          window.showScreen('screen-home');
-        } else {
-          await push(ref(db, 'items_pending'), data);
-          alert("Berhasil! Item Anda sedang direview oleh admin.");
-          window.showScreen('screen-home');
-        }
-      } catch (e) {
-        alert("Gagal mengirim: Cek koneksi atau URL gambar.");
-      }
-    };
-
-    window.approveItem = async (id) => {
-      const snap = await get(ref(db, `items_pending/${id}`));
-      if(snap.exists()){
-         await set(ref(db, `items_public/${id}`), snap.val());
-         await remove(ref(db, `items_pending/${id}`));
-      }
-    };
-    
-    window.rejectItem = async (id) => {
-      if (confirm("Tolak dan hapus item ini?")) {
-        await remove(ref(db, `items_pending/${id}`));
-      }
-    };
-
-    window.deletePublicItem = async (id, title) => {
-      if(confirm(`HAPUS ITEM PUBLIK:\n"${title}"\nApakah Anda yakin?`)) {
-        await push(ref(db, 'deleted_log'), {
-          title: title, deletedBy: currentUser.uid, deletedAt: serverTimestamp()
-        });
-        await remove(ref(db, `items_public/${id}`));
-      }
-    };
-
-    window.applyLanguage();
-  </script>
+  <!-- Module Script Gabungan -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
