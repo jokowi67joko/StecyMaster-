@@ -59,7 +59,23 @@
     .login-close { position: absolute; top: 15px; right: 20px; color: #666; cursor: pointer; font-size: 20px; font-weight: bold; }
     .login-title { text-align: center; font-size: 24px; font-weight: bold; margin: 10px 0 5px 0; }
     .login-subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 25px; }
-    .login-subtitle span { color: var(--primary); cursor: pointer; font-weight: bold; }
+    
+    /* PERBAIKAN TOMBOL SIGN UP / LOG IN */
+    .login-subtitle span { 
+      color: var(--primary); 
+      cursor: pointer; 
+      font-weight: bold; 
+      /* Mencegah browser highlight/salin teks */
+      user-select: none; 
+      -webkit-user-select: none; 
+      -ms-user-select: none;
+      /* Memperbesar area klik di HP */
+      padding: 10px 5px; 
+    }
+    .login-subtitle span:active {
+      opacity: 0.7;
+    }
+
     .auth-input-group { position: relative; margin-bottom: 15px; }
     .auth-input-group input { background-color: transparent; border: 1px solid #444; border-radius: 10px; padding: 15px; font-size: 14px; color: white; width: 100%; transition: border-color 0.3s; margin-bottom: 0; }
     .auth-input-group input:focus { border-color: var(--primary); }
@@ -111,7 +127,7 @@
     </ul>
   </div>
 
-  <!-- LAYAR LOGIN/REGISTER BARU -->
+  <!-- LAYAR LOGIN/REGISTER -->
   <div id="screen-login" class="screen active" style="padding: 0;">
     <div class="login-container">
       <div class="login-box">
@@ -328,7 +344,7 @@
       if(e.key === "Escape") window.closeModal('modal-logout');
     });
 
-    // SISTEM LOGIN & DAFTAR EMAIL/PASSWORD YANG DIPERBAIKI (BUKAN GIMIK)
+    // SISTEM LOGIN & DAFTAR EMAIL/PASSWORD
     window.toggleAuthMode = () => {
       isSignUpMode = !isSignUpMode;
       const title = document.getElementById('auth-title-text');
@@ -363,21 +379,17 @@
         return;
       }
 
-      // Animasi Loading
       btn.disabled = true;
       btn.innerText = "Loading...";
 
       try {
         if (isSignUpMode) {
-          // Fungsi Asli Daftar Firebase
           await createUserWithEmailAndPassword(auth, email, password);
           alert("Akun berhasil dibuat! Silakan lanjutkan untuk membuat Username.");
         } else {
-          // Fungsi Asli Login Firebase
           await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (error) {
-        // Tangkap dan terjemahkan Error dari Firebase
         if (error.code === 'auth/email-already-in-use') {
           errorMsg.innerText = "Email sudah terdaftar. Silakan Log in.";
         } else if (error.code === 'auth/weak-password') {
