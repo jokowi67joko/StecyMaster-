@@ -8,13 +8,13 @@
 </head>
 <body>
 
-  <!-- ================= CUSTOM MODAL (Alert / Confirm) ================= -->
+  <!-- ================= CUSTOM MODAL ================= -->
   <div id="custom-modal" class="modal-overlay">
     <div class="modal-box">
       <h3 id="modal-title" class="text-primary font-bold" style="margin-bottom: 10px;">Pesan</h3>
       <p id="modal-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height: 1.4;"></p>
       <div id="modal-actions" class="flex" style="gap:10px;">
-        <!-- Tombol akan di-inject via JS -->
+        <!-- Inject JS -->
       </div>
     </div>
   </div>
@@ -29,17 +29,14 @@
     </div>
     
     <ul class="drawer-menu">
-      <!-- Ikon Translate -->
       <li onclick="window.showModalAlert('Fitur ganti bahasa akan segera hadir!')">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor" stroke="none"/></svg>
         Translate (ID/EN)
       </li>
-      <!-- Ikon Support/Bantuan -->
       <li onclick="window.open('https://wa.me/6283151363087', '_blank')">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 2.98.97 4.29L2 22l5.71-.97C9.02 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM12 16h-1v-4h1v4zm0-6h-1V8h1v2z" fill="currentColor" stroke="none"/></svg>
         Layanan / Bantuan
       </li>
-      <!-- Info Versi -->
       <li style="color:var(--text-muted); cursor:default;">
         <svg class="icon icon-sm" viewBox="0 0 24 24" style="stroke:currentColor;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         Versi 1.1.0 (Beta)
@@ -96,12 +93,16 @@
         <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
       <div class="logo font-bold"><span class="text-primary">Stecy</span><span style="color: white;">Master</span></div>
-      <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')">
-         <span style="background: var(--danger); color: white; font-size:11px; padding:4px 8px; border-radius:12px; font-weight:bold;">Panel Admin</span>
+      
+      <!-- Tombol Admin dengan Ikon Perisai -->
+      <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
+         <span style="background: var(--danger); color: white; font-size:11px; padding:6px 10px; border-radius:12px; font-weight:bold; display: flex; align-items: center; gap: 4px;">
+           <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+           Panel Admin
+         </span>
       </button>
     </header>
 
-    <!-- Kategori Horizontal dengan SVG Ikon -->
     <div class="category-container">
       <button class="chip active" onclick="window.setCategoryFilter('Semua', this)">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -152,6 +153,7 @@
     <header class="flex items-center" style="gap: 15px;">
       <div class="logo font-bold">Profil Saya</div>
     </header>
+    
     <div class="profile-header">
       <!-- Input File Tersembunyi -->
       <input type="file" id="profile-upload" accept="image/*" class="hidden" onchange="window.handleProfileUpload(event)">
@@ -161,9 +163,10 @@
         <div class="avatar-overlay">UBAH FOTO</div>
       </div>
       
-      <h2 id="profile-name" class="font-bold text-main">Player Name</h2>
+      <h2 id="profile-name" class="font-bold text-main" style="margin-bottom: 5px;">Player Name</h2>
       <div id="profile-role-badge"></div>
-      <button class="btn btn-secondary" style="margin: 20px auto 0; width: 160px; border-color: var(--danger); color: var(--danger);" onclick="window.customLogout()">Keluar Akun</button>
+      
+      <button class="btn btn-secondary" style="margin: 25px auto 0; width: 160px; border-color: var(--danger); color: var(--danger);" onclick="window.customLogout()">Keluar Akun</button>
     </div>
     
     <nav class="bottom-nav">
