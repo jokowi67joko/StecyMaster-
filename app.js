@@ -17,7 +17,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-setPersistence(auth, browserLocalPersistence);
 
 let currentUser = null;
 let isAdmin = false;
@@ -25,7 +24,6 @@ let isSignUpMode = false;
 let globalAllItems = [];
 let currentCategoryFilter = 'Semua';
 
-// Variabel Penampung Base64 File Upload Lokal
 let localImageBase64 = null;
 let localFileBase64 = null;
 
@@ -112,7 +110,72 @@ window.customLogout = () => {
   });
 };
 
-// ================= UPLOAD FOTO PROFIL (1MB - 5MB) =================
+// ================= PENGUNCIAN SESI & CEK LOGIN =================
+// 1. Terapkan persistence (Sesi di-save di Local Storage)
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    // 2. Jika sukses, pantau status login user.
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const userRef = ref(db, `users/${user.uid}`);
+        const snap = await get(userRef);
+        
+        if (snap.exists() && snap.val().username) {
+           document.getElementById('profile-name').innerText = snap.val().username;
+           document.getElementById('sidebar-name').innerText = snap.val().username;
+           const dp = snap.val().photoURL || user.photoURL || 'https://via.placeholder.com/150';
+           document.getElementById('profile-img').src = dp;
+           document.getElementById('sidebar-profile-img').src = dp;
+           checkAdminStatus();
+        } else {
+           window.switchScreen('screen-username');
+        }
+      } else {
+        // Jika belum login, buka menu login
+        window.switchScreen('screen-login');
+      }
+    });
+  })
+  .catch((error) => {
+    window.switchScreen('screen-login');
+  });
+
+window.saveUsername = async () => {
+  const username = document.getElementById('input-username').value.trim();
+  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { document.getElementById('username-error').innerText = "Format salah (3-16 huruf/angka/_)"; return; }
+  try {
+    const unSnap = await get(ref(db, `usernames/${username}`));
+    if (unSnap.exists() && unSnap.val() !== currentUser.uid) { document.getElementById('username-error').innerText = "Username dipakai! Pilih lain."; return; }
+    await set(ref(db, `usernames/${username}`), currentUser.uid);
+    await set(ref(db, `users/${currentUser.uid}/username`), username);
+    document.getElementById('profile-name').innerText = username;
+    document.getElementById('sidebar-name').innerText = username;
+    checkAdminStatus();
+  } catch (e) { document.getElementById('username-error').innerText = "Gagal menyimpan."; }
+};
+
+function checkAdminStatus() {
+  onValue(ref(db, `admins/${currentUser.uid}`), (snap) => {
+    isAdmin = (snap.exists() && snap.val() === true);
+    if (isAdmin) {
+      const badgeHTML = '<span style="background:var(--primary); color:black; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-block;">Admin Utama</span>';
+      document.getElementById('profile-role-badge').innerHTML = badgeHTML;
+      document.getElementById('sidebar-role').innerHTML = badgeHTML;
+      document.getElementById('btn-open-admin').classList.remove('hidden');
+      loadPendingItems();
+    } else {
+      const badgeHTML = '<span style="background:var(--bg-elevated); color:white; border:1px solid #555; padding:4px 12px; border-radius:12px; font-size:11px; display:inline-block;">Member</span>';
+      document.getElementById('profile-role-badge').innerHTML = badgeHTML;
+      document.getElementById('sidebar-role').innerHTML = badgeHTML;
+      document.getElementById('btn-open-admin').classList.add('hidden');
+    }
+  });
+  window.switchScreen('screen-home');
+  fetchAllItemsAndRender();
+}
+
+// ================= UPLOAD FOTO PROFIL =================
 window.handleProfileUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -151,62 +214,6 @@ window.handleProfileUpload = (event) => {
   };
   reader.readAsDataURL(file);
 };
-
-// ================= CEK USERNAME & LOAD AWAL =================
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-    const userRef = ref(db, `users/${user.uid}`);
-    const snap = await get(userRef);
-    
-    if (snap.exists() && snap.val().username) {
-       document.getElementById('profile-name').innerText = snap.val().username;
-       document.getElementById('sidebar-name').innerText = snap.val().username;
-       const dp = snap.val().photoURL || user.photoURL || 'https://via.placeholder.com/150';
-       document.getElementById('profile-img').src = dp;
-       document.getElementById('sidebar-profile-img').src = dp;
-       checkAdminStatus();
-    } else {
-       window.switchScreen('screen-username');
-    }
-  } else {
-    window.switchScreen('screen-login');
-  }
-});
-
-window.saveUsername = async () => {
-  const username = document.getElementById('input-username').value.trim();
-  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { document.getElementById('username-error').innerText = "Format salah (3-16 huruf/angka/_)"; return; }
-  try {
-    const unSnap = await get(ref(db, `usernames/${username}`));
-    if (unSnap.exists() && unSnap.val() !== currentUser.uid) { document.getElementById('username-error').innerText = "Username dipakai! Pilih lain."; return; }
-    await set(ref(db, `usernames/${username}`), currentUser.uid);
-    await set(ref(db, `users/${currentUser.uid}/username`), username);
-    document.getElementById('profile-name').innerText = username;
-    document.getElementById('sidebar-name').innerText = username;
-    checkAdminStatus();
-  } catch (e) { document.getElementById('username-error').innerText = "Gagal menyimpan."; }
-};
-
-function checkAdminStatus() {
-  onValue(ref(db, `admins/${currentUser.uid}`), (snap) => {
-    isAdmin = (snap.exists() && snap.val() === true);
-    if (isAdmin) {
-      const badgeHTML = '<span style="background:var(--primary); color:black; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-block;">Admin Utama</span>';
-      document.getElementById('profile-role-badge').innerHTML = badgeHTML;
-      document.getElementById('sidebar-role').innerHTML = badgeHTML;
-      document.getElementById('btn-open-admin').classList.remove('hidden');
-      loadPendingItems();
-    } else {
-      const badgeHTML = '<span style="background:var(--bg-elevated); color:white; border:1px solid #555; padding:4px 12px; border-radius:12px; font-size:11px; display:inline-block;">Member</span>';
-      document.getElementById('profile-role-badge').innerHTML = badgeHTML;
-      document.getElementById('sidebar-role').innerHTML = badgeHTML;
-      document.getElementById('btn-open-admin').classList.add('hidden');
-    }
-  });
-  window.switchScreen('screen-home');
-  fetchAllItemsAndRender();
-}
 
 // ================= FILTER & DYNAMIC LAYOUT =================
 window.setCategoryFilter = (category, btnElement) => {
@@ -275,7 +282,7 @@ window.handleLocalImage = (e) => {
   reader.onload = (e) => {
     localImageBase64 = e.target.result;
     document.getElementById('img-status').innerText = `✓ Gambar siap: ${file.name}`;
-    document.getElementById('add-img').value = ""; // Bersihkan kolom URL manual
+    document.getElementById('add-img').value = ""; 
   };
   reader.readAsDataURL(file);
 };
@@ -288,11 +295,10 @@ window.handleLocalFile = (e) => {
   reader.onload = (e) => {
     localFileBase64 = e.target.result;
     document.getElementById('file-status').innerText = `✓ File siap: ${file.name}`;
-    document.getElementById('add-file').value = ""; // Bersihkan kolom URL manual
+    document.getElementById('add-file').value = ""; 
   };
   reader.readAsDataURL(file);
 };
-
 
 // ================= KIRIM & SELEKSI =================
 window.submitItem = async () => {
@@ -303,17 +309,14 @@ window.submitItem = async () => {
   const version = document.getElementById('add-version').value.trim();
   const desc_id = document.getElementById('add-desc').value.trim();
   
-  // Prioritaskan gambar/file Base64, kalau tidak ada baru pakai URL manual
   const finalImg = localImageBase64 || document.getElementById('add-img').value.trim();
   const finalFile = localFileBase64 || document.getElementById('add-file').value.trim();
 
-  // VALIDASI KEKOSONGAN FORM
   if (!title || !version || !desc_id || !finalImg || !finalFile) { 
     window.showModalAlert("Gagal: Semua field wajib diisi! Pastikan Anda sudah memberikan URL atau memilih File untuk Gambar dan Download."); 
     return; 
   }
 
-  // VALIDASI URL (Jika user mengisi manual dan BUKAN base64 hasil upload HP)
   if (!finalImg.startsWith('data:') && !finalImg.startsWith('http')) {
      window.showModalAlert("Gagal: Format URL Gambar tidak valid (harus diawali http/https)."); return;
   }
@@ -321,7 +324,6 @@ window.submitItem = async () => {
      window.showModalAlert("Gagal: Format URL File Download tidak valid."); return;
   }
 
-  // Tampilkan indikator loading
   const btnSubmit = document.getElementById('btn-submit-item');
   btnSubmit.disabled = true;
   btnSubmit.innerText = "Mengunggah... (Jangan tutup jendela ini)";
@@ -342,7 +344,6 @@ window.submitItem = async () => {
       window.showModalAlert("Berhasil dikirim! Item Anda sedang direview oleh tim kami.");
     }
     
-    // Reset Form
     document.getElementById('add-title').value = ''; document.getElementById('add-version').value = '';
     document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = '';
     document.getElementById('add-file').value = ''; document.getElementById('file-img').value = '';
