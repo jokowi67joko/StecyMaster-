@@ -1,123 +1,251 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-body { background-color: #000; color: #fff; padding-bottom: 80px; }
+/* ================= VARIABEL WARNA & TEMA ================= */
+:root {
+  --bg-dark: #121212;
+  --bg-surface: #1e1e1e;
+  --bg-elevated: #2a2a2a;
+  --primary: #ff8c00;
+  --primary-hover: #e07b00;
+  --text-main: #ffffff;
+  --text-muted: #a0a0a0;
+  --border-color: #333333;
+  --danger: #f44336;
+  --success: #4caf50;
+  --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 
+/* ================= RESET & BASE ================= */
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; outline: none; }
+input, textarea, select { font-family: inherit; outline: none; }
+
+/* ================= UTILITY CLASSES ================= */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.hidden { display: none !important; }
+.text-primary { color: var(--primary); }
+.text-danger { color: var(--danger); }
+.font-bold { font-weight: bold; }
+
+/* Pengaturan Ikon Vektor (SVG) */
+.icon { 
+  width: 24px; 
+  height: 24px; 
+  fill: none; 
+  stroke: currentColor; 
+  stroke-width: 2; 
+  stroke-linecap: round; 
+  stroke-linejoin: round; 
+}
+.icon-sm { width: 18px; height: 18px; }
+
+/* ================= LAYOUT UTAMA ================= */
+.app-container {
+  max-width: 800px; /* Lebar maksimal agar rapi di desktop & mobile */
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
+  position: relative;
+}
+
+/* ================= HEADER ================= */
 header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px; background-color: #000;
+  background-color: var(--bg-surface);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-.logo { font-size: 20px; font-weight: bold; }
-.text-orange { color: #ff9800; }
-.menu-icon, .search-icon { font-size: 20px; cursor: pointer; }
+.logo { font-size: 20px; letter-spacing: 0.5px; }
+.header-btn { color: var(--text-main); padding: 5px; }
 
-.search-bar { padding: 0 15px; margin-bottom: 15px; }
-.search-bar input {
-    width: 100%; padding: 12px; border-radius: 8px; border: none;
-    background-color: #1a1a1a; color: white; outline: none;
+/* ================= TOMBOL & INPUT ================= */
+.btn {
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+  border: none;
+}
+.btn:active { opacity: 0.8; }
+.btn-primary { background-color: var(--primary); color: #000; }
+.btn-secondary { background-color: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border-color); }
+
+.input-field {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: white;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+.input-field:focus { border-color: var(--primary); }
+
+/* ================= KATEGORI CHIPS ================= */
+.category-container {
+  padding: 16px 20px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+.category-container::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+.chip {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.chip.active {
+  background-color: rgba(255, 140, 0, 0.15);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: bold;
 }
 
-.tabs {
-    display: flex; gap: 10px; padding: 0 15px; overflow-x: auto; margin-bottom: 20px;
+/* ================= LIST KONTEN / KARTU ITEM ================= */
+.content-list {
+  padding: 0 20px 90px; /* Padding bawah extra untuk bottom nav */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card {
+  background-color: var(--bg-surface);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+.card-img {
+  width: 120px;
+  min-width: 120px;
+  background-color: var(--bg-elevated);
+  object-fit: cover;
+}
+.card-body {
+  padding: 12px 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ================= BOTTOM NAVIGATION ================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0 15px 0;
+  z-index: 60;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+  flex: 1;
+}
+.nav-item.active { color: var(--primary); }
+.nav-item svg { transition: transform 0.2s; }
+.nav-item.active svg { transform: scale(1.1); }
+
+/* ================= FLOATING ACTION BUTTON (FAB) ================= */
+.fab {
+  position: fixed;
+  bottom: 90px; /* Di atas bottom nav */
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: var(--primary);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+  z-index: 40;
+}
+@media (min-width: 800px) {
+  .fab {
+    right: calc(50% - 380px); /* Menyesuaikan posisi max-width 800px */
+  }
+}
+
+/* ================= PROFIL & ADMIN ================= */
+.profile-header {
+  background-color: var(--bg-surface);
+  padding: 30px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+.avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: var(--bg-elevated);
+  margin: 0 auto 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid var(--primary);
+  overflow: hidden;
+}
+.profile-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
 }
 .tab {
-    padding: 8px 16px; border: 1px solid #333; border-radius: 20px;
-    background: transparent; color: white; cursor: pointer; white-space: nowrap;
+  flex: 1;
+  text-align: center;
+  padding: 16px;
+  color: var(--text-muted);
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
-.tab.active { background-color: #ff9800; border-color: #ff9800; color: black; font-weight: bold; }
-
-.container { padding: 0 15px; display: flex; flex-direction: column; gap: 15px; }
-
-/* Desain List Item */
-.list-item {
-    display: flex; gap: 15px; background: #1a1a1a; padding: 12px;
-    border-radius: 12px; border: 1px solid #2a2a2a;
+.tab.active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
 }
-.list-item img {
-    width: 80px; height: 80px; border-radius: 8px; object-fit: cover;
-}
-.list-info { flex: 1; }
-.list-info h3 { font-size: 16px; margin-bottom: 5px; }
-.list-info p { font-size: 12px; color: #aaa; margin-bottom: 10px; }
-.list-actions { display: flex; gap: 10px; }
-.list-actions button {
-    flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;
-}
-.btn-orange { background-color: #ff9800; color: black; }
-.btn-dark { background-color: #333; color: white; }
-.btn-red { background-color: #ff4444; color: white; }
-
-/* Tombol Plus & Modal */
-#floatingBtn {
-    position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
-    background-color: #ff9800; color: black; border-radius: 50%; font-size: 30px;
-    display: none; justify-content: center; align-items: center; cursor: pointer;
-    box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
-}
-.modal {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center;
-}
-.modal-box {
-    background: #1a1a1a; width: 90%; max-width: 400px; padding: 20px;
-    border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; gap: 10px;
-}
-.modal-box input, .modal-box select, .modal-box textarea {
-    padding: 10px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px;
-}
-.modal-actions { display: flex; gap: 10px; margin-top: 10px; }
-.modal-actions button { flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; }
-/* =========================================
-   DESAIN FORM LOGIN MODERN
-   ========================================= */
-.login-modal {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center;
-    backdrop-filter: blur(5px);
-}
-.login-box {
-    background: #0d0d0d; width: 90%; max-width: 360px; padding: 35px 25px;
-    border-radius: 30px; border: 1px solid #222; text-align: center; position: relative;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-}
-.login-close {
-    position: absolute; top: 15px; right: 20px; background: none; border: none;
-    color: #888; font-size: 24px; cursor: pointer;
-}
-.login-box h2 {
-    font-size: 24px; font-weight: 600; margin-bottom: 5px; color: #fff; line-height: 1.3;
-}
-.login-subtitle {
-    font-size: 13px; color: #888; margin-bottom: 25px;
-}
-.login-subtitle span {
-    color: #ff9800; cursor: pointer; font-weight: bold;
-}
-.login-input {
-    width: 100%; padding: 16px; margin-bottom: 15px; border-radius: 14px;
-    border: 1px solid transparent; background: #1a1a1a; color: white;
-    font-size: 14px; outline: none; transition: 0.2s;
-}
-.login-input:focus {
-    border-color: #ff9800; background: #222;
-}
-.btn-primary-login {
-    width: 100%; padding: 16px; border-radius: 30px; background: #ff9800;
-    color: #000; font-weight: bold; font-size: 16px; border: none; cursor: pointer;
-    margin-top: 5px; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3); transition: 0.2s;
-}
-.btn-primary-login:active { transform: scale(0.97); }
-.login-divider {
-    display: flex; align-items: center; text-align: center; margin: 25px 0; color: #555;
-}
-.login-divider::before, .login-divider::after {
-    content: ''; flex: 1; border-bottom: 1px solid #333;
-}
-.login-divider span { padding: 0 10px; font-size: 12px; }
-.social-login-container { display: flex; justify-content: center; gap: 15px; }
-.btn-social {
-    width: 80px; height: 50px; border-radius: 12px; background: transparent;
-    border: 1px solid #333; display: flex; justify-content: center; align-items: center;
-    cursor: pointer; transition: 0.2s;
-}
-.btn-social:hover { border-color: #ff9800; background: #111; }
-.btn-social img { width: 22px; height: 22px; }
-
