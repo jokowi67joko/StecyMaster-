@@ -2,8 +2,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getDatabase, ref, onValue, set, get, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
-
-// Data Statis dari file lain
 import { staticItems } from "./data-static.js";
 
 const firebaseConfig = {
@@ -24,9 +22,12 @@ setPersistence(auth, browserLocalPersistence);
 let currentUser = null;
 let isAdmin = false;
 let isSignUpMode = false;
-
 let globalAllItems = [];
 let currentCategoryFilter = 'Semua';
+
+// Variabel Penampung Base64 File Upload Lokal
+let localImageBase64 = null;
+let localFileBase64 = null;
 
 // ================= CUSTOM MODALS =================
 window.showModalAlert = (msg) => {
@@ -82,7 +83,7 @@ window.processEmailAuth = async () => {
   if (!email || !password) { errorMsg.innerText = 'Email dan Password wajib diisi.'; return; }
 
   btn.disabled = true;
-  btn.innerText = "Loading...";
+  btn.innerText = "Memproses...";
   try {
     if (isSignUpMode) await createUserWithEmailAndPassword(auth, email, password);
     else await signInWithEmailAndPassword(auth, email, password);
@@ -95,7 +96,7 @@ window.processEmailAuth = async () => {
 
 window.loginGoogle = async () => {
   try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
-  catch (error) { document.getElementById('login-error').innerText = error.message; }
+  catch (error) { document.getElementById('login-error').innerText = "Pastikan domain 'ecymaster.vercel.app' sudah di-Whitelist di Firebase Authorized Domains!"; }
 };
 
 window.customLogout = () => {
@@ -120,8 +121,8 @@ window.handleProfileUpload = (event) => {
   const size5MB = 5 * 1024 * 1024;
 
   if (file.size < size1MB || file.size > size5MB) {
-    window.showModalAlert("Gagal: Ukuran foto harus di antara 1 MB hingga 5 MB!");
-    event.target.value = ''; // Reset form input file
+    window.showModalAlert("Gagal: Ukuran foto profil harus di antara 1 MB hingga 5 MB!");
+    event.target.value = ''; 
     return;
   }
 
@@ -131,13 +132,10 @@ window.handleProfileUpload = (event) => {
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const size = Math.min(img.width, img.height);
-      canvas.width = 256; 
-      canvas.height = 256;
-      
+      canvas.width = 256; canvas.height = 256;
       const ctx = canvas.getContext('2d');
       const offsetX = (img.width - size) / 2;
       const offsetY = (img.height - size) / 2;
-      
       ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, 256, 256);
       
       const base64Image = canvas.toDataURL('image/jpeg', 0.8);
@@ -147,9 +145,7 @@ window.handleProfileUpload = (event) => {
         document.getElementById('sidebar-profile-img').src = base64Image;
         set(ref(db, `users/${currentUser.uid}/photoURL`), base64Image);
         window.showModalAlert("Foto profil berhasil diperbarui!");
-      }).catch(err => {
-        window.showModalAlert("Gagal menyimpan foto: " + err.message);
-      });
+      }).catch(err => window.showModalAlert("Gagal menyimpan foto."));
     };
     img.src = e.target.result;
   };
@@ -160,18 +156,15 @@ window.handleProfileUpload = (event) => {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    
     const userRef = ref(db, `users/${user.uid}`);
     const snap = await get(userRef);
     
     if (snap.exists() && snap.val().username) {
        document.getElementById('profile-name').innerText = snap.val().username;
        document.getElementById('sidebar-name').innerText = snap.val().username;
-       
        const dp = snap.val().photoURL || user.photoURL || 'https://via.placeholder.com/150';
        document.getElementById('profile-img').src = dp;
        document.getElementById('sidebar-profile-img').src = dp;
-       
        checkAdminStatus();
     } else {
        window.switchScreen('screen-username');
@@ -183,20 +176,16 @@ onAuthStateChanged(auth, async (user) => {
 
 window.saveUsername = async () => {
   const username = document.getElementById('input-username').value.trim();
-  const errEl = document.getElementById('username-error');
-  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { errEl.innerText = "Format salah (3-16 huruf/angka/_)"; return; }
-  
+  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { document.getElementById('username-error').innerText = "Format salah (3-16 huruf/angka/_)"; return; }
   try {
     const unSnap = await get(ref(db, `usernames/${username}`));
-    if (unSnap.exists() && unSnap.val() !== currentUser.uid) { errEl.innerText = "Username dipakai! Pilih lain."; return; }
-    
+    if (unSnap.exists() && unSnap.val() !== currentUser.uid) { document.getElementById('username-error').innerText = "Username dipakai! Pilih lain."; return; }
     await set(ref(db, `usernames/${username}`), currentUser.uid);
     await set(ref(db, `users/${currentUser.uid}/username`), username);
-    
     document.getElementById('profile-name').innerText = username;
     document.getElementById('sidebar-name').innerText = username;
     checkAdminStatus();
-  } catch (e) { errEl.innerText = "Gagal menyimpan: " + e.message; }
+  } catch (e) { document.getElementById('username-error').innerText = "Gagal menyimpan."; }
 };
 
 function checkAdminStatus() {
@@ -222,10 +211,8 @@ function checkAdminStatus() {
 // ================= FILTER & DYNAMIC LAYOUT =================
 window.setCategoryFilter = (category, btnElement) => {
   currentCategoryFilter = category;
-  
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btnElement.classList.add('active');
-  
   renderItemsToUI();
 };
 
@@ -247,9 +234,7 @@ function renderItemsToUI() {
   
   let displayItems = globalAllItems;
   if (currentCategoryFilter !== 'Semua') {
-    displayItems = globalAllItems.filter(item => 
-      item.category.toLowerCase() === currentCategoryFilter.toLowerCase()
-    );
+    displayItems = globalAllItems.filter(item => item.category.toLowerCase() === currentCategoryFilter.toLowerCase());
   }
 
   if (displayItems.length === 0) {
@@ -261,7 +246,7 @@ function renderItemsToUI() {
   const cardClass = isSpecific ? 'card-vertical' : 'card-horizontal';
 
   displayItems.forEach(item => {
-    const btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn btn-secondary" style="border:1px solid red; color:red; flex:none;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
+    const btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn btn-secondary" style="border:1px solid red; color:red; flex:none; padding:8px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
     const badgeType = item.source === 'github' ? `<div class="badge-github">Via GitHub</div>` : '';
 
     container.innerHTML += `
@@ -273,7 +258,7 @@ function renderItemsToUI() {
           <div class="card-meta">${item.category} ${item.version ? '• '+item.version : ''}</div>
           <p class="card-desc">${item.desc_id || item.desc || ''}</p>
           <div class="flex" style="gap:10px;">
-            <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="flex:1; text-align:center; text-decoration:none;">Download</a>
+            <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="flex:1; text-align:center; padding:10px; text-decoration:none;">Download</a>
             ${btnAdmin}
           </div>
         </div>
@@ -281,21 +266,69 @@ function renderItemsToUI() {
   });
 }
 
+// ================= HANDLER UPLOAD FILE LOKAL =================
+window.handleLocalImage = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 1 * 1024 * 1024) { window.showModalAlert("Max 1MB untuk gambar preview."); e.target.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    localImageBase64 = e.target.result;
+    document.getElementById('img-status').innerText = `✓ Gambar siap: ${file.name}`;
+    document.getElementById('add-img').value = ""; // Bersihkan kolom URL manual
+  };
+  reader.readAsDataURL(file);
+};
+
+window.handleLocalFile = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { window.showModalAlert("Max 5MB untuk file mod/download."); e.target.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    localFileBase64 = e.target.result;
+    document.getElementById('file-status').innerText = `✓ File siap: ${file.name}`;
+    document.getElementById('add-file').value = ""; // Bersihkan kolom URL manual
+  };
+  reader.readAsDataURL(file);
+};
+
+
 // ================= KIRIM & SELEKSI =================
 window.submitItem = async () => {
   if (!currentUser) return;
-  const title = document.getElementById('add-title').value;
+  
+  const title = document.getElementById('add-title').value.trim();
   const cat = document.getElementById('add-cat').value;
-  const version = document.getElementById('add-version').value;
-  const desc_id = document.getElementById('add-desc').value;
-  const img = document.getElementById('add-img').value;
-  const file = document.getElementById('add-file').value;
+  const version = document.getElementById('add-version').value.trim();
+  const desc_id = document.getElementById('add-desc').value.trim();
+  
+  // Prioritaskan gambar/file Base64, kalau tidak ada baru pakai URL manual
+  const finalImg = localImageBase64 || document.getElementById('add-img').value.trim();
+  const finalFile = localFileBase64 || document.getElementById('add-file').value.trim();
 
-  if (!title || !img || !file) { window.showModalAlert("Judul, URL Gambar, dan File wajib diisi!"); return; }
+  // VALIDASI KEKOSONGAN FORM
+  if (!title || !version || !desc_id || !finalImg || !finalFile) { 
+    window.showModalAlert("Gagal: Semua field wajib diisi! Pastikan Anda sudah memberikan URL atau memilih File untuk Gambar dan Download."); 
+    return; 
+  }
+
+  // VALIDASI URL (Jika user mengisi manual dan BUKAN base64 hasil upload HP)
+  if (!finalImg.startsWith('data:') && !finalImg.startsWith('http')) {
+     window.showModalAlert("Gagal: Format URL Gambar tidak valid (harus diawali http/https)."); return;
+  }
+  if (!finalFile.startsWith('data:') && !finalFile.startsWith('http')) {
+     window.showModalAlert("Gagal: Format URL File Download tidak valid."); return;
+  }
+
+  // Tampilkan indikator loading
+  const btnSubmit = document.getElementById('btn-submit-item');
+  btnSubmit.disabled = true;
+  btnSubmit.innerText = "Mengunggah... (Jangan tutup jendela ini)";
 
   const data = {
     title: title, category: cat, version: version, desc_id: desc_id,
-    url_img: img, url_file: file,
+    url_img: finalImg, url_file: finalFile,
     uid: currentUser.uid, username: document.getElementById('sidebar-name').innerText,
     createdAt: serverTimestamp()
   };
@@ -303,14 +336,26 @@ window.submitItem = async () => {
   try {
     if (isAdmin) {
       await push(ref(db, 'items_public'), data);
-      window.showModalAlert("Telah dipublikasikan langsung oleh Admin!");
+      window.showModalAlert("Berhasil! Telah dipublikasikan langsung oleh Admin!");
     } else {
       await push(ref(db, 'items_pending'), data);
-      window.showModalAlert("Berhasil! Item Anda sedang direview oleh tim kami.");
+      window.showModalAlert("Berhasil dikirim! Item Anda sedang direview oleh tim kami.");
     }
-    document.getElementById('add-title').value = ''; document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = ''; document.getElementById('add-file').value = '';
+    
+    // Reset Form
+    document.getElementById('add-title').value = ''; document.getElementById('add-version').value = '';
+    document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = '';
+    document.getElementById('add-file').value = ''; document.getElementById('file-img').value = '';
+    document.getElementById('file-doc').value = ''; document.getElementById('img-status').innerText = '';
+    document.getElementById('file-status').innerText = '';
+    localImageBase64 = null; localFileBase64 = null;
+    
+    btnSubmit.disabled = false; btnSubmit.innerText = "Upload Sekarang";
     window.switchScreen('screen-home');
-  } catch (e) { window.showModalAlert("Gagal mengirim data."); }
+  } catch (e) { 
+    window.showModalAlert("Gagal mengirim data. Payload mungkin terlalu besar (Max Firebase RTDB 10MB per request)."); 
+    btnSubmit.disabled = false; btnSubmit.innerText = "Upload Sekarang";
+  }
 };
 
 // ================= ADMIN PANEL =================
