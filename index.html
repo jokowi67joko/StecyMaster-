@@ -4,33 +4,73 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>StecyMaster Forum</title>
-  
-  <!-- Panggil file CSS Baru di sini -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <!-- ================= CUSTOM MODAL (Alert / Confirm) ================= -->
+  <div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="modal-title" class="text-primary font-bold" style="margin-bottom: 10px;">Pesan</h3>
+      <p id="modal-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height: 1.4;"></p>
+      <div id="modal-actions" class="flex" style="gap:10px;">
+        <!-- Tombol akan di-inject via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SIDE DRAWER ================= -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="window.toggleSidebar()"></div>
+  <div id="side-drawer" class="side-drawer">
+    <div style="text-align:center; padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:10px;">
+      <img id="sidebar-profile-img" src="https://via.placeholder.com/60" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
+      <h3 id="sidebar-name" style="margin-top:10px; font-size:16px;">Username</h3>
+      <div id="sidebar-role"></div>
+    </div>
+    
+    <ul class="drawer-menu">
+      <!-- Ikon Translate -->
+      <li onclick="window.showModalAlert('Fitur ganti bahasa akan segera hadir!')">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor" stroke="none"/></svg>
+        Translate (ID/EN)
+      </li>
+      <!-- Ikon Support/Bantuan -->
+      <li onclick="window.open('https://wa.me/6283151363087', '_blank')">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 2.98.97 4.29L2 22l5.71-.97C9.02 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM12 16h-1v-4h1v4zm0-6h-1V8h1v2z" fill="currentColor" stroke="none"/></svg>
+        Layanan / Bantuan
+      </li>
+      <!-- Info Versi -->
+      <li style="color:var(--text-muted); cursor:default;">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" style="stroke:currentColor;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Versi 1.1.0 (Beta)
+      </li>
+    </ul>
+    
+    <div style="margin-top:auto;">
+      <button class="btn btn-secondary" onclick="window.customLogout()" style="width:100%; border-color:var(--danger); color:var(--danger);">Keluar Akun</button>
+    </div>
+  </div>
+
   <!-- ================= LAYAR LOGIN / SIGN UP ================= -->
   <div id="screen-login" class="app-container screen">
     <div style="margin: auto; padding: 30px; background: var(--bg-surface); border-radius: 12px; width: 90%; max-width: 400px; text-align: center; margin-top: 10vh; border: 1px solid var(--border-color);">
-      <h2 class="text-primary font-bold" id="auth-title-text" style="font-size: 24px; margin-bottom: 5px;">Welcome Back</h2>
+      <h2 class="text-primary font-bold" id="auth-title-text" style="font-size: 24px; margin-bottom: 5px;">Masuk ke Akun</h2>
       <p style="color:var(--text-muted); font-size:14px; margin-bottom: 25px;">
-        <span id="auth-subtitle-text">New to StecyMaster?</span>
-        <span onclick="window.toggleAuthMode()" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;">Tukar</span>
+        <span id="auth-subtitle-text">Belum punya akun?</span>
+        <span onclick="window.toggleAuthMode()" id="auth-switch-text" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;">Daftar di sini</span>
       </p>
 
-      <input type="email" id="auth-email" placeholder="Email address" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-      <input type="password" id="auth-password" placeholder="Password (Min 6 chars)" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+      <input type="email" id="auth-email" placeholder="Alamat Email" class="input-field">
+      <input type="password" id="auth-password" placeholder="Password (Minimal 6 karakter)" class="input-field">
       
-      <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()">Log In</button>
+      <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()">Masuk</button>
       <p id="login-error" class="text-danger" style="margin-top: 10px; font-size: 13px;"></p>
 
       <div class="flex items-center" style="margin: 20px 0; gap: 10px;">
         <hr style="flex:1; border-color:var(--border-color);">
-        <span style="color:var(--text-muted); font-size:12px;">atau login pakai</span>
+        <span style="color:var(--text-muted); font-size:12px;">atau via</span>
         <hr style="flex:1; border-color:var(--border-color);">
       </div>
-
       <button class="btn btn-secondary" onclick="window.loginGoogle()">Google</button>
     </div>
   </div>
@@ -41,19 +81,9 @@
       <h2 class="text-primary font-bold" style="margin-bottom: 10px;">Buat Username</h2>
       <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
       
-      <input type="text" id="input-username" placeholder="Username_Keren" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+      <input type="text" id="input-username" placeholder="Cth: Steve_01" class="input-field">
       <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()">Simpan Username</button>
       <p id="username-error" class="text-danger" style="margin-top: 10px; font-size: 14px;"></p>
-      
-      <!-- Panel Khusus Setup Admin Utama -->
-      <div id="panel-admin-setup" class="hidden" style="margin-top: 20px; background: rgba(244,67,54,0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--danger); text-align: left;">
-        <h4 class="text-danger" style="margin-bottom: 5px;">Setup Admin Utama</h4>
-        <p style="font-size: 12px; color: #ccc; margin-bottom: 10px;">Email admin terdeteksi. Salin UID ini ke Firebase <code>/admins/</code></p>
-        <div class="flex" style="gap: 10px;">
-          <input type="text" id="admin-uid-copy" readonly style="flex:1; background: var(--bg-dark); color: white; border: none; padding: 8px; border-radius: 4px;">
-          <button class="btn" style="background: var(--danger); color: white; padding: 8px 12px; flex: none;" onclick="window.copyAdminUID()">Salin</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -61,22 +91,41 @@
   <div id="screen-home" class="app-container screen hidden">
     <!-- Header -->
     <header class="flex items-center justify-between">
-      <div class="logo font-bold"><span class="text-primary">Stecy</span><span style="color: white;">Master Forum</span></div>
-      <!-- Tombol Admin pindah ke Header agar rapi -->
+      <button class="header-btn" onclick="window.toggleSidebar()">
+        <!-- Hamburger Icon -->
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <div class="logo font-bold"><span class="text-primary">Stecy</span><span style="color: white;">Master</span></div>
       <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')">
-         <span style="background: var(--primary); color: black; font-size:11px; padding:4px 8px; border-radius:12px; font-weight:bold;">Admin Panel</span>
+         <span style="background: var(--danger); color: white; font-size:11px; padding:4px 8px; border-radius:12px; font-weight:bold;">Panel Admin</span>
       </button>
     </header>
 
-    <!-- Kategori Horizontal -->
+    <!-- Kategori Horizontal dengan SVG Ikon -->
     <div class="category-container">
-      <button class="chip active">Semua</button>
-      <button class="chip">Mod</button>
-      <button class="chip">Texture</button>
-      <button class="chip">Map</button>
+      <button class="chip active" onclick="window.setCategoryFilter('Semua', this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Semua
+      </button>
+      <button class="chip" onclick="window.setCategoryFilter('Mod', this)">
+        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Mod
+      </button>
+      <button class="chip" onclick="window.setCategoryFilter('Texture', this)">
+        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        Texture
+      </button>
+      <button class="chip" onclick="window.setCategoryFilter('Map', this)">
+        <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        Map
+      </button>
+      <button class="chip" onclick="window.setCategoryFilter('Launcher', this)">
+        <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+        Launcher
+      </button>
     </div>
 
-    <!-- List Item Publik (Gabungan FB + GitHub) -->
+    <!-- List Item Publik -->
     <div id="public-items-container" class="content-list">
       <p style="text-align:center; color: var(--text-muted);">Memuat konten...</p>
     </div>
@@ -85,12 +134,11 @@
     <nav class="bottom-nav">
       <button class="nav-item active" onclick="window.switchScreen('screen-home')">
         <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
+        <span>Beranda</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-add')">
-        <!-- Icon Plus / Upload -->
         <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>Kirim Item</span>
+        <span>Upload</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-profile')">
         <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -105,22 +153,27 @@
       <div class="logo font-bold">Profil Saya</div>
     </header>
     <div class="profile-header">
-      <div class="avatar">
-        <img id="profile-img" src="https://via.placeholder.com/80" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+      <!-- Input File Tersembunyi -->
+      <input type="file" id="profile-upload" accept="image/*" class="hidden" onchange="window.handleProfileUpload(event)">
+      
+      <div class="avatar-container" onclick="document.getElementById('profile-upload').click()">
+        <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar">
+        <div class="avatar-overlay">UBAH FOTO</div>
       </div>
-      <h2 id="profile-name" class="font-bold">Player Name</h2>
-      <div id="profile-role"></div>
-      <button class="btn" style="background:var(--bg-elevated); color:white; border:1px solid var(--border-color); margin-top:20px; width:150px; margin-left:auto; margin-right:auto;" onclick="window.confirmLogout()">Keluar Akun</button>
+      
+      <h2 id="profile-name" class="font-bold text-main">Player Name</h2>
+      <div id="profile-role-badge"></div>
+      <button class="btn btn-secondary" style="margin: 20px auto 0; width: 160px; border-color: var(--danger); color: var(--danger);" onclick="window.customLogout()">Keluar Akun</button>
     </div>
     
     <nav class="bottom-nav">
       <button class="nav-item" onclick="window.switchScreen('screen-home')">
         <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
+        <span>Beranda</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-add')">
         <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>Kirim Item</span>
+        <span>Upload</span>
       </button>
       <button class="nav-item active">
         <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -132,25 +185,23 @@
   <!-- ================= LAYAR TAMBAH ITEM ================= -->
   <div id="screen-add" class="app-container screen hidden">
     <header class="flex items-center justify-between">
-      <button class="header-btn" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      </button>
+      <button class="header-btn" onclick="window.switchScreen('screen-home')">Batal</button>
       <div class="logo font-bold">Kirim Item Baru</div>
-      <div style="width:24px;"></div> <!-- Spacer -->
+      <div style="width:40px;"></div>
     </header>
     <div style="padding: 20px;">
-      <input type="text" id="add-title" placeholder="Judul Item" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-      <select id="add-cat" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+      <input type="text" id="add-title" placeholder="Judul Item" class="input-field">
+      <select id="add-cat" class="input-field">
         <option value="Mod">Mod</option>
         <option value="Texture">Texture</option>
         <option value="Map">Map</option>
+        <option value="Launcher">Launcher</option>
       </select>
-      <input type="text" id="add-version" placeholder="Versi MCPE (opsional)" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-      <textarea id="add-desc" placeholder="Deskripsi Singkat" rows="3" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;"></textarea>
-      <input type="url" id="add-img" placeholder="URL Gambar (https://...)" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-      <input type="url" id="add-file" placeholder="URL File Download" style="width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-      
-      <button class="btn btn-primary" onclick="window.submitItem()">Kirim Sekarang</button>
+      <input type="text" id="add-version" placeholder="Versi MCPE (contoh: 0.15.10)" class="input-field">
+      <textarea id="add-desc" placeholder="Deskripsi Singkat" rows="3" class="input-field"></textarea>
+      <input type="url" id="add-img" placeholder="URL Gambar Preview" class="input-field">
+      <input type="url" id="add-file" placeholder="URL File Download" class="input-field" style="margin-bottom: 25px;">
+      <button class="btn btn-primary" onclick="window.submitItem()">Upload Sekarang</button>
     </div>
   </div>
 
@@ -164,17 +215,15 @@
       <div style="width:24px;"></div>
     </header>
     
-    <!-- Tab Internal Admin -->
-    <div class="profile-tabs" style="background:var(--bg-surface);">
-      <div class="tab active" style="flex:1; border-bottom:2px solid var(--primary); color:var(--primary); padding:15px; text-align:center; font-weight:bold;">Antrean (<span id="pending-count">0</span>)</div>
+    <div style="background:var(--bg-surface); padding:15px; text-align:center; border-bottom:2px solid var(--primary); color:var(--primary); font-weight:bold;">
+      Antrean (<span id="pending-count">0</span>)
     </div>
 
     <div id="pending-items-container" class="content-list" style="padding-top: 20px;">
-      <p style="text-align:center; color: var(--text-muted);">Tidak ada kiriman baru.</p>
+      <p style="text-align:center; color: var(--text-muted);">Tidak ada antrean.</p>
     </div>
   </div>
 
-  <!-- Module Script Gabungan -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
