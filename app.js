@@ -25,10 +25,10 @@ let currentUser = null;
 let isAdmin = false;
 let isSignUpMode = false;
 
-let globalAllItems = []; // Simpan semua item untuk sistem filter
+let globalAllItems = [];
 let currentCategoryFilter = 'Semua';
 
-// ================= CUSTOM MODALS (Ganti alert/confirm) =================
+// ================= CUSTOM MODALS =================
 window.showModalAlert = (msg) => {
   document.getElementById('modal-title').innerText = "Informasi";
   document.getElementById('modal-msg').innerText = msg;
@@ -40,8 +40,8 @@ window.showModalConfirm = (msg, onConfirmCallback) => {
   document.getElementById('modal-title').innerText = "Konfirmasi";
   document.getElementById('modal-msg').innerText = msg;
   document.getElementById('modal-actions').innerHTML = `
-    <button class="btn btn-secondary" onclick="document.getElementById('custom-modal').classList.remove('active')">Batal</button>
-    <button class="btn btn-danger" id="btn-modal-confirm">Yakin</button>
+    <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('custom-modal').classList.remove('active')">Batal</button>
+    <button class="btn btn-danger" style="flex:1;" id="btn-modal-confirm">Yakin</button>
   `;
   document.getElementById('custom-modal').classList.add('active');
   
@@ -99,7 +99,9 @@ window.loginGoogle = async () => {
 };
 
 window.customLogout = () => {
-  window.toggleSidebar();
+  if (document.getElementById('side-drawer').classList.contains('active')) {
+     window.toggleSidebar();
+  }
   window.showModalConfirm("Yakin ingin keluar dari akun?", () => {
     signOut(auth).then(() => {
       isAdmin = false;
@@ -109,15 +111,17 @@ window.customLogout = () => {
   });
 };
 
-// ================= UPLOAD FOTO PROFIL (CROP 1:1, MAX 780KB) =================
+// ================= UPLOAD FOTO PROFIL (1MB - 5MB) =================
 window.handleProfileUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Cek Ukuran File (780KB = 780 * 1024 bytes)
-  if (file.size > 780 * 1024) {
-    window.showModalAlert("Gagal: Ukuran foto maksimal 780 KB!");
-    event.target.value = ''; // Reset input
+  const size1MB = 1024 * 1024;
+  const size5MB = 5 * 1024 * 1024;
+
+  if (file.size < size1MB || file.size > size5MB) {
+    window.showModalAlert("Gagal: Ukuran foto harus di antara 1 MB hingga 5 MB!");
+    event.target.value = ''; // Reset form input file
     return;
   }
 
@@ -125,23 +129,19 @@ window.handleProfileUpload = (event) => {
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
-      // Setup Canvas untuk Crop ke tengah (Rasio 1:1)
       const canvas = document.createElement('canvas');
       const size = Math.min(img.width, img.height);
-      canvas.width = 256; // Resize agar hemat storage database
+      canvas.width = 256; 
       canvas.height = 256;
       
       const ctx = canvas.getContext('2d');
       const offsetX = (img.width - size) / 2;
       const offsetY = (img.height - size) / 2;
       
-      // Draw image di-crop dan di-resize ke 256x256
       ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, 256, 256);
       
-      // Convert ke DataURL (Base64 JPEG kualitas 0.8)
       const base64Image = canvas.toDataURL('image/jpeg', 0.8);
       
-      // Simpan ke Firebase Auth & Realtime Database
       updateProfile(currentUser, { photoURL: base64Image }).then(() => {
         document.getElementById('profile-img').src = base64Image;
         document.getElementById('sidebar-profile-img').src = base64Image;
@@ -161,7 +161,6 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     
-    // Ambil Data Profil dari Database
     const userRef = ref(db, `users/${user.uid}`);
     const snap = await get(userRef);
     
@@ -169,7 +168,6 @@ onAuthStateChanged(auth, async (user) => {
        document.getElementById('profile-name').innerText = snap.val().username;
        document.getElementById('sidebar-name').innerText = snap.val().username;
        
-       // Pasang Foto Profil dari Database atau Auth
        const dp = snap.val().photoURL || user.photoURL || 'https://via.placeholder.com/150';
        document.getElementById('profile-img').src = dp;
        document.getElementById('sidebar-profile-img').src = dp;
@@ -205,13 +203,13 @@ function checkAdminStatus() {
   onValue(ref(db, `admins/${currentUser.uid}`), (snap) => {
     isAdmin = (snap.exists() && snap.val() === true);
     if (isAdmin) {
-      const badgeHTML = '<span style="background:var(--primary); color:black; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-block; margin-top:5px;">Admin Utama</span>';
+      const badgeHTML = '<span style="background:var(--primary); color:black; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-block;">Admin Utama</span>';
       document.getElementById('profile-role-badge').innerHTML = badgeHTML;
       document.getElementById('sidebar-role').innerHTML = badgeHTML;
       document.getElementById('btn-open-admin').classList.remove('hidden');
       loadPendingItems();
     } else {
-      const badgeHTML = '<span style="background:var(--bg-elevated); color:white; border:1px solid #555; padding:3px 10px; border-radius:12px; font-size:11px; display:inline-block; margin-top:5px;">Member</span>';
+      const badgeHTML = '<span style="background:var(--bg-elevated); color:white; border:1px solid #555; padding:4px 12px; border-radius:12px; font-size:11px; display:inline-block;">Member</span>';
       document.getElementById('profile-role-badge').innerHTML = badgeHTML;
       document.getElementById('sidebar-role').innerHTML = badgeHTML;
       document.getElementById('btn-open-admin').classList.add('hidden');
@@ -225,11 +223,9 @@ function checkAdminStatus() {
 window.setCategoryFilter = (category, btnElement) => {
   currentCategoryFilter = category;
   
-  // Ubah status tombol aktif
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btnElement.classList.add('active');
   
-  // Render ulang list
   renderItemsToUI();
 };
 
@@ -240,9 +236,8 @@ function fetchAllItemsAndRender() {
       snapshot.forEach(child => { dynamicItems.push({ id: child.key, source: 'firebase', ...child.val() }); });
       dynamicItems.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
     }
-    // Gabungkan dengan staticItems (GitHub)
     globalAllItems = [...staticItems, ...dynamicItems];
-    renderItemsToUI(); // Tampilkan sesuai filter saat ini
+    renderItemsToUI(); 
   });
 }
 
@@ -250,7 +245,6 @@ function renderItemsToUI() {
   const container = document.getElementById('public-items-container');
   container.innerHTML = '';
   
-  // Lakukan Filter Data
   let displayItems = globalAllItems;
   if (currentCategoryFilter !== 'Semua') {
     displayItems = globalAllItems.filter(item => 
@@ -263,12 +257,11 @@ function renderItemsToUI() {
     return;
   }
 
-  // Tentukan Layout (Jika 'Semua' = Horizontal, Jika Spesifik = Vertical/Preview Besar)
   const isSpecific = currentCategoryFilter !== 'Semua';
   const cardClass = isSpecific ? 'card-vertical' : 'card-horizontal';
 
   displayItems.forEach(item => {
-    const btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn" style="background:transparent; border:1px solid red; color:red; padding:8px; flex:none;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
+    const btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn btn-secondary" style="border:1px solid red; color:red; flex:none;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
     const badgeType = item.source === 'github' ? `<div class="badge-github">Via GitHub</div>` : '';
 
     container.innerHTML += `
@@ -315,7 +308,6 @@ window.submitItem = async () => {
       await push(ref(db, 'items_pending'), data);
       window.showModalAlert("Berhasil! Item Anda sedang direview oleh tim kami.");
     }
-    // Bersihkan form
     document.getElementById('add-title').value = ''; document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = ''; document.getElementById('add-file').value = '';
     window.switchScreen('screen-home');
   } catch (e) { window.showModalAlert("Gagal mengirim data."); }
