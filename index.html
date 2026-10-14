@@ -56,26 +56,9 @@
     /* CUSTOM LOGIN UI */
     .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--bg-dark); }
     .login-box { background-color: #121212; border-radius: 16px; padding: 30px 25px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
-    .login-close { position: absolute; top: 15px; right: 20px; color: #666; cursor: pointer; font-size: 20px; font-weight: bold; }
     .login-title { text-align: center; font-size: 24px; font-weight: bold; margin: 10px 0 5px 0; }
     .login-subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 25px; }
-    
-    /* PERBAIKAN TOMBOL SIGN UP / LOG IN */
-    .login-subtitle span { 
-      color: var(--primary); 
-      cursor: pointer; 
-      font-weight: bold; 
-      /* Mencegah browser highlight/salin teks */
-      user-select: none; 
-      -webkit-user-select: none; 
-      -ms-user-select: none;
-      /* Memperbesar area klik di HP */
-      padding: 10px 5px; 
-    }
-    .login-subtitle span:active {
-      opacity: 0.7;
-    }
-
+    .login-subtitle span { color: var(--primary); cursor: pointer; font-weight: bold; user-select: none; padding: 10px 5px; }
     .auth-input-group { position: relative; margin-bottom: 15px; }
     .auth-input-group input { background-color: transparent; border: 1px solid #444; border-radius: 10px; padding: 15px; font-size: 14px; color: white; width: 100%; transition: border-color 0.3s; margin-bottom: 0; }
     .auth-input-group input:focus { border-color: var(--primary); }
@@ -130,9 +113,7 @@
   <!-- LAYAR LOGIN/REGISTER -->
   <div id="screen-login" class="screen active" style="padding: 0;">
     <div class="login-container">
-      <div class="login-box">
-        <div class="login-close" onclick="console.log('Close clicked')">X</div>
-        
+      <div class="login-box">        
         <h2 class="login-title" id="auth-title-text">Welcome Back<br>to StecyMaster</h2>
         <p class="login-subtitle" id="auth-subtitle-text">
           New to StecyMaster? <span onclick="window.toggleAuthMode()">Sign up</span>
@@ -142,7 +123,7 @@
           <input type="email" id="auth-email" placeholder="Email address">
         </div>
         <div class="auth-input-group">
-          <input type="password" id="auth-password" placeholder="Password">
+          <input type="password" id="auth-password" placeholder="Password (Min 6 chars)">
         </div>
 
         <button class="auth-submit-btn" id="auth-submit-btn" onclick="window.processEmailAuth()">Log in</button>
@@ -171,7 +152,7 @@
     <h2 data-i18n="create_user_title">Buat Username</h2>
     <p data-i18n="create_user_desc" style="color: var(--text-gray); font-size: 14px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
     <input type="text" id="input-username" placeholder="Username_Keren" style="background: transparent;">
-    <button class="btn btn-primary" onclick="window.saveUsername()" data-i18n="btn_save" style="width: 100%; padding: 12px; margin-top: 10px;">Simpan</button>
+    <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()" data-i18n="btn_save" style="width: 100%; padding: 12px; margin-top: 10px;">Simpan Username</button>
     <p id="username-error" style="color: red; margin-top: 10px; font-size: 14px;"></p>
     
     <!-- Panel Khusus Admin Utama -->
@@ -207,7 +188,7 @@
     <input type="url" id="add-img" placeholder="URL Gambar Preview (https://...)" style="background: transparent;">
     
     <div style="background: #1a1a1a; border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-      <p style="margin:0 0 10px 0; font-size: 12px; color: #aaa;" data-i18n="catbox_note">Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah. (Upload langsung sering diblokir browser).</p>
+      <p style="margin:0 0 10px 0; font-size: 12px; color: #aaa;" data-i18n="catbox_note">Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah.</p>
       <button class="btn btn-gray" onclick="window.open('https://catbox.moe', '_blank')" style="width: 100%; margin-bottom: 15px; padding: 10px;" data-i18n="btn_catbox">Buka Catbox.moe</button>
       <input type="url" id="add-file" placeholder="URL File Download (https://files.catbox.moe/...)" style="background: transparent; margin-bottom: 0;">
     </div>
@@ -243,12 +224,19 @@
     import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import { getDatabase, ref, onValue, set, get, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-    // Konfigurasi Anda (Ganti dengan Config Firebase Anda yang asli)
+    // --- KONFIGURASI FIREBASE BARU ---
     const firebaseConfig = {
-      projectId: "stecymaster-e285a",
-      // apiKey: "AIzaSy...",
-      // authDomain: "stecymaster-e285a.firebaseapp.com",
-      // databaseURL: "https://stecymaster-e285a-default-rtdb.asia-southeast1.firebasedatabase.app"
+      apiKey: "AIzaSyDKAeiozNSKsrt2m91D0utim2VvddzE-cw",
+      authDomain: "stetecymasterfire.firebaseapp.com",
+      projectId: "stetecymasterfire",
+      storageBucket: "stetecymasterfire.firebasestorage.app",
+      messagingSenderId: "636144676167",
+      appId: "1:636144676167:web:a4c658d64778d5323b3062",
+      
+      // PERHATIAN: Parameter di bawah ini WAJIB ditambahkan untuk Realtime Database. 
+      // Jika server kamu dibuat di Singapura (asia-southeast1), gunakan yang ini. 
+      // Jika dibuat di Amerika Serikat, hapus ".asia-southeast1.firebasedatabase.app" dan ganti dengan ".firebaseio.com"
+      databaseURL: "https://stetecymasterfire-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -261,19 +249,18 @@
     let currentLang = localStorage.getItem('lang') || 'id';
     let isSignUpMode = false;
 
+    // TERJEMAHAN
     const dict = {
       'id': {
         menu_translate: "Terjemahan (ID/EN)", menu_home: "Beranda", menu_admin: "Dashboard Seleksi", menu_add: "Kirim Item", menu_logout: "Keluar akun",
-        login_desc: "Forum & Database MCPE Mod", login_btn: "Masuk dengan Google",
-        create_user_title: "Buat Username", create_user_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).", btn_save: "Simpan",
+        create_user_title: "Buat Username", create_user_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).", btn_save: "Simpan Username",
         home_title: "Daftar Item Publik", loading: "Memuat data...",
         add_title: "Kirim Item Baru", catbox_note: "Gunakan Catbox.moe untuk upload file lalu tempel URL-nya di bawah.", btn_catbox: "Buka Catbox.moe", btn_submit: "Kirim / Publikasikan",
         admin_title: "Dashboard Seleksi", logout_title: "Yakin ingin keluar?", btn_cancel: "Batal", btn_logout: "Keluar"
       },
       'en': {
         menu_translate: "Translate (ID/EN)", menu_home: "Home", menu_admin: "Selection Dashboard", menu_add: "Submit Item", menu_logout: "Logout",
-        login_desc: "MCPE Mod Forum & Database", login_btn: "Sign in with Google",
-        create_user_title: "Create Username", create_user_desc: "Letters, numbers, underscore only (3-16 chars).", btn_save: "Save",
+        create_user_title: "Create Username", create_user_desc: "Letters, numbers, underscore only (3-16 chars).", btn_save: "Save Username",
         home_title: "Public Items", loading: "Loading data...",
         add_title: "Submit New Item", catbox_note: "Use Catbox.moe to upload files and paste the URL below.", btn_catbox: "Open Catbox.moe", btn_submit: "Submit / Publish",
         admin_title: "Selection Dashboard", logout_title: "Are you sure you want to logout?", btn_cancel: "Cancel", btn_logout: "Logout"
@@ -285,7 +272,7 @@
         const key = el.getAttribute('data-i18n');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
       });
-      loadPublicItems(); 
+      if(currentUser) loadPublicItems(); 
     };
 
     window.switchLanguage = () => {
@@ -304,23 +291,15 @@
       }
     };
 
+    // SIDEBAR & MODAL
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    let touchStartX = 0;
-    
     window.toggleSidebar = () => {
       const isOpen = sidebar.style.left === '0px';
       sidebar.style.left = isOpen ? '-300px' : '0px';
       overlay.style.display = isOpen ? 'none' : 'block';
       setTimeout(() => overlay.style.opacity = isOpen ? '0' : '1', 10);
     };
-
-    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
-    document.addEventListener('touchend', e => {
-      if (sidebar.style.left === '0px' && touchStartX - e.changedTouches[0].screenX > 50) {
-        window.toggleSidebar();
-      }
-    });
 
     window.closeModal = (id) => {
       const modal = document.getElementById(id);
@@ -329,30 +308,24 @@
     };
     
     window.logoutPopup = () => {
-      document.getElementById('logout-avatar').src = currentUser.photoURL || '';
+      document.getElementById('logout-avatar').src = currentUser.photoURL || 'https://via.placeholder.com/80?text=U';
       document.getElementById('logout-user').innerText = document.getElementById('profile-name').innerText;
       document.getElementById('logout-email').innerText = currentUser.email;
       const modal = document.getElementById('modal-logout');
       modal.style.display = 'flex';
       setTimeout(() => modal.querySelector('.modal-card').style.transform = 'scale(1)', 10);
     };
-
     document.getElementById('modal-logout').addEventListener('click', (e) => {
       if(e.target === document.getElementById('modal-logout')) window.closeModal('modal-logout');
     });
-    document.addEventListener('keydown', (e) => {
-      if(e.key === "Escape") window.closeModal('modal-logout');
-    });
 
-    // SISTEM LOGIN & DAFTAR EMAIL/PASSWORD
+    // ALUR LOGIN EMAIL/PASSWORD
     window.toggleAuthMode = () => {
       isSignUpMode = !isSignUpMode;
       const title = document.getElementById('auth-title-text');
       const subtitle = document.getElementById('auth-subtitle-text');
       const btn = document.getElementById('auth-submit-btn');
-      const errorMsg = document.getElementById('login-error');
-      
-      errorMsg.innerText = '';
+      document.getElementById('login-error').innerText = '';
 
       if (isSignUpMode) {
         title.innerHTML = "Create Account<br>for StecyMaster";
@@ -372,12 +345,7 @@
       const btn = document.getElementById('auth-submit-btn');
       
       errorMsg.innerText = '';
-      errorMsg.style.color = 'red';
-
-      if (!email || !password) {
-        errorMsg.innerText = 'Email dan Password wajib diisi.';
-        return;
-      }
+      if (!email || !password) { errorMsg.innerText = 'Email dan Password wajib diisi.'; return; }
 
       btn.disabled = true;
       btn.innerText = "Loading...";
@@ -385,26 +353,21 @@
       try {
         if (isSignUpMode) {
           await createUserWithEmailAndPassword(auth, email, password);
-          alert("Akun berhasil dibuat! Silakan lanjutkan untuk membuat Username.");
         } else {
           await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
-          errorMsg.innerText = "Email sudah terdaftar. Silakan Log in.";
-        } else if (error.code === 'auth/weak-password') {
-          errorMsg.innerText = "Password terlalu pendek (minimal 6 karakter).";
-        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-          errorMsg.innerText = "Email atau Password salah.";
-        } else {
-          errorMsg.innerText = "Gagal: " + error.message;
-        }
-      } finally {
+        if (error.code === 'auth/email-already-in-use') errorMsg.innerText = "Email sudah terdaftar. Silakan Log in.";
+        else if (error.code === 'auth/weak-password') errorMsg.innerText = "Password terlalu pendek (minimal 6 karakter).";
+        else if (error.code === 'auth/invalid-credential') errorMsg.innerText = "Email atau Password salah.";
+        else errorMsg.innerText = "Gagal: " + error.message;
+        
         btn.disabled = false;
         btn.innerText = isSignUpMode ? "Sign up" : "Log in";
       }
     };
 
+    // ALUR LOGIN GOOGLE
     window.loginGoogle = async () => {
       const provider = new GoogleAuthProvider();
       try {
@@ -417,40 +380,40 @@
         }
       }
     };
-
-    getRedirectResult(auth).catch(err => {
-      document.getElementById('login-error').innerText = "Redirect Error: " + err.message;
-    });
+    getRedirectResult(auth).catch(err => { document.getElementById('login-error').innerText = "Redirect Error: " + err.message; });
 
     window.confirmLogout = () => {
       signOut(auth).then(() => {
         window.closeModal('modal-logout');
+        isAdmin = false;
+        currentUser = null;
         window.showScreen('screen-login');
+        document.getElementById('auth-submit-btn').disabled = false;
+        document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign up" : "Log in";
       });
     };
 
-    // AUTH STATE
+    // PEMANTAUAN STATUS LOGIN (ALUR UTAMA)
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        if(user.photoURL) {
-          document.getElementById('profile-img').src = user.photoURL;
-        }
+        document.getElementById('profile-img').src = user.photoURL || 'https://via.placeholder.com/60?text=U';
         
         const userRef = ref(db, `users/${user.uid}`);
         const snap = await get(userRef);
+        
         if (snap.exists() && snap.val().username) {
            document.getElementById('profile-name').innerText = snap.val().username;
            checkAdminStatus();
         } else {
            window.showScreen('screen-username');
+           
            if (user.email === 'hamdisyarud@gmail.com') {
              document.getElementById('panel-admin-setup').classList.remove('hidden');
              document.getElementById('admin-uid-copy').value = user.uid;
            }
         }
       } else {
-        currentUser = null;
         window.showScreen('screen-login');
       }
     });
@@ -462,27 +425,43 @@
       alert("UID disalin! Masukkan ke JSON /admins/ di Firebase Console.");
     };
 
+    // ALUR BUAT USERNAME BARU
     window.saveUsername = async () => {
       const username = document.getElementById('input-username').value.trim();
       const errEl = document.getElementById('username-error');
+      const btnSave = document.getElementById('btn-save-username');
+      
       if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
          errEl.innerText = "Format salah (3-16 huruf/angka/_)"; return;
       }
+      
+      btnSave.disabled = true;
+      btnSave.innerText = "Menyimpan...";
+      
       try {
         const usernameRef = ref(db, `usernames/${username}`);
         const unSnap = await get(usernameRef);
+        
         if (unSnap.exists() && unSnap.val() !== currentUser.uid) {
-           errEl.innerText = "Username sudah dipakai!"; return;
+           errEl.innerText = "Username sudah dipakai! Pilih yang lain."; 
+           btnSave.disabled = false;
+           btnSave.innerText = "Simpan Username";
+           return;
         }
+        
         await set(usernameRef, currentUser.uid);
         await set(ref(db, `users/${currentUser.uid}/username`), username);
+        
         document.getElementById('profile-name').innerText = username;
         checkAdminStatus();
       } catch (e) {
-        errEl.innerText = "Gagal menyimpan: " + e.message;
+        errEl.innerText = "Gagal menyimpan: Pastikan Rules Database sudah benar diperbarui.";
+        btnSave.disabled = false;
+        btnSave.innerText = "Simpan Username";
       }
     };
 
+    // CEK STATUS ADMIN & LOAD DATA
     async function checkAdminStatus() {
       const adminRef = ref(db, `admins/${currentUser.uid}`);
       onValue(adminRef, (snap) => {
@@ -491,25 +470,31 @@
           document.getElementById('profile-role').innerHTML = '<span class="badge-admin">ADMIN</span>';
           document.getElementById('menu-admin').classList.remove('hidden');
           loadPendingItems();
+        } else {
+          isAdmin = false;
+          document.getElementById('profile-role').innerHTML = '';
+          document.getElementById('menu-admin').classList.add('hidden');
         }
       });
+      
       window.showScreen('screen-home');
       window.applyLanguage();
       loadPublicItems();
     }
 
+    // LOAD ITEM PUBLIK
     function loadPublicItems() {
       const pubRef = ref(db, 'items_public');
       onValue(pubRef, (snapshot) => {
         const container = document.getElementById('public-items-container');
         container.innerHTML = '';
         if (!snapshot.exists()) {
-          container.innerHTML = '<p style="text-align:center; color: var(--text-gray);">Tidak ada item.</p>';
+          container.innerHTML = '<p style="text-align:center; color: var(--text-gray);">Belum ada item yang dipublikasikan.</p>';
           return;
         }
+        
         const items = [];
         snapshot.forEach(child => { items.push({ id: child.key, ...child.val() }); });
-        
         items.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
 
         items.forEach(item => {
@@ -521,7 +506,7 @@
               <img src="${item.url_img}" class="item-img" onerror="this.src='https://via.placeholder.com/300x150?text=No+Image'">
               <div class="item-content">
                 <h3 style="margin:0 0 10px 0;">${item.title}</h3>
-                <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-gray);">${desc}</p>
+                <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-gray); line-height: 1.4;">${desc}</p>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <span style="background:#333; padding:4px 10px; border-radius:12px; font-size:12px; border: 1px solid #555;">${item.category}</span>
                   <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="text-decoration:none; padding:8px 15px; border-radius:6px; color:black;">Download</a>
@@ -534,6 +519,7 @@
       });
     }
 
+    // LOAD ITEM PENDING (KHUSUS ADMIN)
     function loadPendingItems() {
       if(!isAdmin) return;
       onValue(ref(db, 'items_pending'), (snapshot) => {
@@ -562,6 +548,7 @@
       });
     }
 
+    // ALUR SUBMIT ITEM
     window.submitItem = async () => {
       if (!currentUser) return;
       const title = document.getElementById('add-title').value;
@@ -584,15 +571,15 @@
       try {
         if (isAdmin) {
           await push(ref(db, 'items_public'), data);
-          alert("Item berhasil dipublikasikan!");
+          alert("Item berhasil dipublikasikan langsung oleh Admin!");
           window.showScreen('screen-home');
         } else {
           await push(ref(db, 'items_pending'), data);
-          alert("Item terkirim! Menunggu persetujuan admin.");
+          alert("Berhasil! Item Anda sedang direview oleh admin.");
           window.showScreen('screen-home');
         }
       } catch (e) {
-        alert("Gagal mengirim: " + e.message);
+        alert("Gagal mengirim: Cek koneksi atau URL gambar.");
       }
     };
 
@@ -605,8 +592,7 @@
     };
     
     window.rejectItem = async (id) => {
-      const alasan = prompt("Alasan penolakan:");
-      if (alasan !== null) {
+      if (confirm("Tolak dan hapus item ini?")) {
         await remove(ref(db, `items_pending/${id}`));
       }
     };
