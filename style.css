@@ -1,4 +1,4 @@
-/* File: style.css */
+/* ================= VARIABEL WARNA & TEMA ================= */
 :root {
   --bg-dark: #121212; --bg-surface: #1e1e1e; --bg-elevated: #2a2a2a;
   --primary: #ff8c00; --primary-hover: #e07b00;
@@ -16,14 +16,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 input, textarea, select { font-family: inherit; outline: none; }
 
 /* ================= ANTI-HIGHLIGHT & ANTI-SELEKSI ================= */
-/* Menghilangkan kedip biru & menu pop-up browser saat elemen disentuh/ditahan */
-button, a, .chip, .card, .nav-item, .drawer-menu li, .avatar-container, img, svg, .header-btn {
+button, a, .chip, .card, .nav-item, .drawer-menu li, .avatar-container, img, svg, .header-btn, header, .logo, .card-meta {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
-/* Kembalikan seleksi teks khusus untuk form input dan deskripsi jika diperlukan */
 input, textarea, .card-desc, p, h2, h3, h4 {
   user-select: text;
   -webkit-user-select: text;
@@ -40,11 +38,6 @@ input, textarea, .card-desc, p, h2, h3, h4 {
 
 /* Layout App */
 .app-container { max-width: 800px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-dark); position: relative; }
-
-/* Header */
-header { background-color: var(--bg-surface); padding: 16px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; }
-.header-btn { color: var(--text-main); padding: 5px; }
-.logo { font-size: 20px; letter-spacing: 0.5px; }
 
 /* Buttons & Inputs */
 .btn { padding: 12px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: opacity 0.2s; width: 100%;}
@@ -85,11 +78,9 @@ header { background-color: var(--bg-surface); padding: 16px 20px; border-bottom:
 
 /* Dynamic Layout Cards */
 .content-list { padding: 0 20px 90px; display: flex; flex-direction: column; gap: 16px; }
-
 .card-horizontal { background: var(--bg-surface); border-radius: 12px; display: flex; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
 .card-horizontal .card-img { width: 120px; min-width: 120px; background: var(--bg-elevated); object-fit: cover; }
 .card-horizontal .card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-
 .card-vertical { background: var(--bg-surface); border-radius: 12px; display: flex; flex-direction: column; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
 .card-vertical .card-img { width: 100%; height: 200px; background: var(--bg-elevated); object-fit: cover; }
 .card-vertical .card-body { padding: 15px; }
@@ -104,3 +95,19 @@ header { background-color: var(--bg-surface); padding: 16px 20px; border-bottom:
 .nav-item.active { color: var(--primary); }
 .nav-item svg { transition: transform 0.2s; }
 .nav-item.active svg { transform: scale(1.1); }
+
+/* ================= LOADING SPINNER (SPLASH SCREEN) ================= */
+.loader {
+  border: 4px solid var(--bg-elevated);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.splash-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
