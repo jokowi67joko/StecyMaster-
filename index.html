@@ -100,19 +100,31 @@
 
   <!-- ================= LAYAR USER (HOME) ================= -->
   <div id="screen-home" class="app-container screen hidden">
-    <!-- Header -->
-    <header class="flex items-center justify-between">
-      <button class="header-btn" onclick="window.toggleSidebar()">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-      </button>
-      <div class="logo font-bold"><span class="text-primary">Stecy</span><span style="color: white;">Master</span></div>
+    <!-- Header Home yang Diperbarui (Posisinya Terkunci di Tengah) -->
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; user-select: none; -webkit-user-select: none;">
       
-      <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
-         <span style="background: var(--danger); color: white; font-size:11px; padding:6px 10px; border-radius:12px; font-weight:bold; display: flex; align-items: center; gap: 4px;">
-           <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-           Panel Admin
-         </span>
-      </button>
+      <!-- Zona Kiri (Hamburger) -->
+      <div style="flex: 1; display: flex; justify-content: flex-start;">
+        <button class="header-btn" onclick="window.toggleSidebar()" style="padding: 5px;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+      </div>
+
+      <!-- Zona Tengah (Logo Terpusat) -->
+      <div class="logo font-bold" style="flex: 2; text-align: center;">
+        <span class="text-primary">Stecy</span><span style="color: white;">Master</span>
+      </div>
+
+      <!-- Zona Kanan (Tombol Admin / Area Kosong) -->
+      <div style="flex: 1; display: flex; justify-content: flex-end;">
+        <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
+           <span style="background: var(--danger); color: white; font-size:10px; padding:6px 10px; border-radius:12px; font-weight:bold; display: flex; align-items: center; gap: 4px;">
+             <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+             Admin
+           </span>
+        </button>
+      </div>
+
     </header>
 
     <div class="category-container">
