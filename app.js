@@ -1,257 +1,273 @@
-// ==========================================
-// 1. DATA BAWAAN (HARDCODED) DARI WEB LAMA
-// ==========================================
-const dataLama = [
-    {
-        title: "Dynamic Lights PE",
-        category: "mod",
-        version: "0.14.3 - 0.15.10",
-        image: "https://files.catbox.moe/09jgnr.webp",
-        file: "https://files.catbox.moe/1a6t9e.js"
-    },
-    {
-        title: "ZombieMutans mod",
-        category: "mod",
-        version: "0.14.3 - 0.15.10",
-        image: "https://files.catbox.moe/hnxwuc.png",
-        file: "https://files.catbox.moe/zl3fru.zip"
-    },
-    {
-        title: "BareBones Texture",
-        category: "texture",
-        version: "0.15.10",
-        image: "https://files.catbox.moe/2w0ta0.png",
-        file: "https://files.catbox.moe/94n3na.zip"
-    }
-];
+// File: app.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set, get, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-// ==========================================
-// 2. KONFIGURASI FIREBASE
-// ==========================================
+// Import data statis dari GitHub
+import { staticItems } from "./data-static.js";
+
 const firebaseConfig = {
-    apiKey: "AIzaSyBccm1pwtgsJp8AMnEeDCinoKf_304ymUY",
-    authDomain: "stecy-1e3b1.firebaseapp.com",
-    databaseURL: "https://stecy-1e3b1-default-rtdb.firebaseio.com",
-    projectId: "stecy-1e3b1",
-    storageBucket: "stecy-1e3b1.firebasestorage.app",
-    messagingSenderId: "620748708577",
-    appId: "1:620748708577:web:eb47be8734c5c618b375a0"
+  apiKey: "AIzaSyDKAeiozNSKsrt2m91D0utim2VvddzE-cw",
+  authDomain: "stetecymasterfire.firebaseapp.com",
+  databaseURL: "https://stetecymasterfire-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "stetecymasterfire",
+  storageBucket: "stetecymasterfire.firebasestorage.app",
+  messagingSenderId: "636144676167",
+  appId: "1:636144676167:web:a4c658d64778d5323b3062"
 };
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+setPersistence(auth, browserLocalPersistence);
 
 let currentUser = null;
-let isUserAdmin = false;
-let currentTab = 'Semua';
-let isLoginMode = true; // Mode UI Login/Register
+let isAdmin = false;
+let isSignUpMode = false;
 
-// Set Persistence agar login tersimpan
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .catch((error) => console.error("Error set persistence:", error));
+// UI SWITCHER
+window.switchScreen = (id) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+};
 
-// ==========================================
-// 3. LOGIKA FORM LOGIN MODERN
-// ==========================================
-function bukaLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
-function tutupLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+// ================= AUTHENTICATION FLOW =================
+window.toggleAuthMode = () => {
+  isSignUpMode = !isSignUpMode;
+  document.getElementById('auth-title-text').innerHTML = isSignUpMode ? "Create Account" : "Welcome Back";
+  document.getElementById('auth-subtitle-text').innerHTML = isSignUpMode ? "Already have an account?" : "New to StecyMaster?";
+  document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign Up" : "Log In";
+  document.getElementById('login-error').innerText = '';
+};
 
-function toggleLoginMode() {
-    isLoginMode = !isLoginMode;
-    const title = document.getElementById('loginTitleText');
-    const subtitle = document.getElementById('loginSubtitleText');
-    const btnSubmit = document.getElementById('btnSubmitAuth');
+window.processEmailAuth = async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errorMsg = document.getElementById('login-error');
+  const btn = document.getElementById('auth-submit-btn');
+  
+  errorMsg.innerText = '';
+  if (!email || !password) { errorMsg.innerText = 'Email dan Password wajib diisi.'; return; }
+
+  btn.disabled = true;
+  btn.innerText = "Loading...";
+  try {
+    if (isSignUpMode) await createUserWithEmailAndPassword(auth, email, password);
+    else await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    errorMsg.innerText = "Gagal: " + error.message;
+    btn.disabled = false;
+    btn.innerText = isSignUpMode ? "Sign Up" : "Log In";
+  }
+};
+
+window.loginGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  try { await signInWithPopup(auth, provider); } 
+  catch (error) { document.getElementById('login-error').innerText = error.message; }
+};
+
+window.confirmLogout = () => {
+  signOut(auth).then(() => {
+    isAdmin = false;
+    currentUser = null;
+    window.switchScreen('screen-login');
+  });
+};
+
+// ================= CEK USERNAME & ADMIN =================
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    // Set profil foto (jika ada dari google)
+    const profImg = document.getElementById('profile-img');
+    if(profImg) profImg.src = user.photoURL || 'https://via.placeholder.com/80';
     
-    if (isLoginMode) {
-        title.innerHTML = "Welcome Back<br>to StecyMaster";
-        subtitle.innerHTML = 'New to StecyMaster? <span onclick="toggleLoginMode()">Sign up</span>';
-        btnSubmit.innerText = "Log in";
-    } else {
-        title.innerHTML = "Create an<br>account";
-        subtitle.innerHTML = 'Already have an account? <span onclick="toggleLoginMode()">Log in</span>';
-        btnSubmit.innerText = "Continue";
-    }
-}
-
-function prosesEmailAuth() {
-    const email = document.getElementById('emailInput').value;
-    const password = document.getElementById('passwordInput').value;
+    const userRef = ref(db, `users/${user.uid}`);
+    const snap = await get(userRef);
     
-    if(!email || !password) return alert("Email dan Password wajib diisi!");
-
-    if (isLoginMode) {
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => { tutupLoginModal(); })
-            .catch((error) => alert("Gagal Login: " + error.message));
+    if (snap.exists() && snap.val().username) {
+       document.getElementById('profile-name').innerText = snap.val().username;
+       checkAdminStatus();
     } else {
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(() => { alert("Akun berhasil dibuat!"); tutupLoginModal(); })
-            .catch((error) => alert("Gagal Daftar: " + error.message));
+       window.switchScreen('screen-username');
+       if (user.email === 'hamdisyarud@gmail.com') {
+         document.getElementById('panel-admin-setup').classList.remove('hidden');
+         document.getElementById('admin-uid-copy').value = user.uid;
+       }
     }
-}
-
-function loginGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-        .then(() => { tutupLoginModal(); })
-        .catch((error) => {
-            console.error(error);
-            alert("Login Google Gagal: " + error.message);
-        });
-}
-
-function logout() {
-    if(confirm("Yakin ingin logout?")) {
-        auth.signOut().then(() => { window.location.reload(); });
-    }
-}
-
-// ==========================================
-// 4. DETEKSI LOGIN & UPDATE UI
-// ==========================================
-auth.onAuthStateChanged((user) => {
-    const floatingBtn = document.getElementById('floatingBtn');
-    const btnOpenLogin = document.getElementById('btnOpenLogin');
-    const userProfilePic = document.getElementById('userProfilePic');
-
-    if (user) {
-        currentUser = user;
-        if (btnOpenLogin) btnOpenLogin.style.display = 'none';
-        if (userProfilePic) {
-            userProfilePic.style.display = 'block';
-            userProfilePic.src = user.photoURL || 'https://ui-avatars.com/api/?name=' + (user.displayName || user.email) + '&background=ff9800&color=000';
-            userProfilePic.title = `Halo, ${user.displayName || user.email} (Klik untuk Logout)`;
-        }
-        if (floatingBtn) floatingBtn.style.display = 'flex';
-        
-        db.ref('admins/' + user.uid).once('value').then((snapshot) => {
-            isUserAdmin = (snapshot.exists() && snapshot.val() === true);
-            if (document.getElementById('feedContainer')) loadPublicItems();
-        });
-    } else {
-        currentUser = null;
-        if (btnOpenLogin) btnOpenLogin.style.display = 'block';
-        if (userProfilePic) userProfilePic.style.display = 'none';
-        if (floatingBtn) floatingBtn.style.display = 'none';
-        if (document.getElementById('feedContainer')) loadPublicItems();
-    }
+  } else {
+    window.switchScreen('screen-login');
+  }
 });
 
-// ==========================================
-// 5. FUNGSI HALAMAN BERANDA (GABUNGAN DATA)
-// ==========================================
+window.saveUsername = async () => {
+  const username = document.getElementById('input-username').value.trim();
+  const errEl = document.getElementById('username-error');
+  const btnSave = document.getElementById('btn-save-username');
+  
+  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { errEl.innerText = "Format salah (3-16 huruf/angka/_)"; return; }
+  
+  btnSave.disabled = true;
+  btnSave.innerText = "Menyimpan...";
+  try {
+    const unSnap = await get(ref(db, `usernames/${username}`));
+    if (unSnap.exists() && unSnap.val() !== currentUser.uid) {
+       errEl.innerText = "Username sudah dipakai! Pilih yang lain."; 
+       btnSave.disabled = false; btnSave.innerText = "Simpan Username"; return;
+    }
+    await set(ref(db, `usernames/${username}`), currentUser.uid);
+    await set(ref(db, `users/${currentUser.uid}/username`), username);
+    
+    document.getElementById('profile-name').innerText = username;
+    checkAdminStatus();
+  } catch (e) {
+    errEl.innerText = "Gagal menyimpan."; btnSave.disabled = false; btnSave.innerText = "Simpan Username";
+  }
+};
+
+window.copyAdminUID = () => {
+  const uidInput = document.getElementById('admin-uid-copy');
+  uidInput.select(); document.execCommand('copy'); alert("UID disalin!");
+};
+
+function checkAdminStatus() {
+  onValue(ref(db, `admins/${currentUser.uid}`), (snap) => {
+    isAdmin = (snap.exists() && snap.val() === true);
+    if (isAdmin) {
+      document.getElementById('profile-role').innerHTML = '<span class="role-badge" style="background:var(--primary); color:black; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold; display:inline-block; margin-top:8px;">Admin Utama</span>';
+      document.getElementById('btn-open-admin').classList.remove('hidden');
+      loadPendingItems();
+    } else {
+      document.getElementById('profile-role').innerHTML = '<span class="role-badge" style="background:var(--bg-elevated); color:white; padding:4px 10px; border-radius:12px; font-size:12px; display:inline-block; margin-top:8px;">Member</span>';
+      document.getElementById('btn-open-admin').classList.add('hidden');
+    }
+  });
+  
+  window.switchScreen('screen-home');
+  loadPublicItems();
+}
+
+// ================= LOAD DATA BERANDA (GABUNGAN FB + GITHUB) =================
 function loadPublicItems() {
-    db.ref('public_items').on('value', (snapshot) => {
-        const container = document.getElementById('feedContainer');
-        if(!container) return;
-        
-        container.innerHTML = ''; 
-
-        dataLama.forEach((item, index) => {
-            if (currentTab === 'Semua' || item.category.toLowerCase() === currentTab.toLowerCase()) {
-                container.innerHTML += renderItemHTML({
-                    judul: item.title,
-                    kategori: item.category,
-                    versi: item.version,
-                    urlGambar: item.image,
-                    urlFile: item.file
-                }, false, 'hardcoded_' + index);
-            }
-        });
-
-        if (snapshot.exists()) {
-            const dataFb = snapshot.val();
-            Object.keys(dataFb).forEach(key => {
-                const itemFb = dataFb[key];
-                if (currentTab === 'Semua' || itemFb.kategori.toLowerCase() === currentTab.toLowerCase()) {
-                    container.innerHTML += renderItemHTML(itemFb, false, key);
-                }
-            });
-        }
-        
-        if (container.innerHTML === '') {
-            container.innerHTML = '<p style="text-align:center; color:#888;">Belum ada item di kategori ini.</p>';
-        }
-    });
-}
-
-function filterKategori(kat) {
-    currentTab = kat;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    loadPublicItems();
-}
-
-// ==========================================
-// 6. FUNGSI UPLOAD FORM
-// ==========================================
-function bukaModal() { 
-    const modal = document.getElementById('modalUpload');
-    if(modal) modal.style.display = 'flex'; 
-}
-
-function tutupModal() { 
-    const modal = document.getElementById('modalUpload');
-    if(modal) modal.style.display = 'none'; 
-}
-
-function kirimItem() {
-    if (!currentUser) return alert("Silakan login dahulu!");
+  onValue(ref(db, 'items_public'), (snapshot) => {
+    const container = document.getElementById('public-items-container');
+    container.innerHTML = '';
     
-    const dataItem = {
-        judul: document.getElementById('judulItem').value,
-        kategori: document.getElementById('kategoriItem').value,
-        versi: document.getElementById('versiMcpe').value,
-        deskripsi: document.getElementById('deskripsiItem').value,
-        urlGambar: document.getElementById('urlGambar').value,
-        urlFile: document.getElementById('urlFile').value,
-        pengirimUID: currentUser.uid,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    };
+    let dynamicItems = [];
+    if (snapshot.exists()) {
+      snapshot.forEach(child => { dynamicItems.push({ id: child.key, source: 'firebase', ...child.val() }); });
+      dynamicItems.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
 
-    if (!dataItem.judul || !dataItem.urlFile) return alert("Judul dan URL File wajib diisi!");
+    // GABUNGKAN DATA
+    const allItems = [...staticItems, ...dynamicItems];
 
-    const path = isUserAdmin ? 'public_items' : 'pending_items';
-    
-    db.ref(path).push(dataItem).then(() => {
-        alert(isUserAdmin ? "Item dipublikasikan!" : "Terkirim! Menunggu ACC Admin.");
-        tutupModal();
-        document.getElementById('judulItem').value = '';
-        document.getElementById('versiMcpe').value = '';
-        document.getElementById('deskripsiItem').value = '';
-        document.getElementById('urlGambar').value = '';
-        document.getElementById('urlFile').value = '';
-    }).catch(e => console.error(e));
-}
+    if (allItems.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Belum ada item yang dipublikasikan.</p>';
+      return;
+    }
 
-// ==========================================
-// 7. HELPER HTML & ADMIN ACTIONS
-// ==========================================
-function renderItemHTML(item, isAdminView, key) {
-    let actionButtons = isAdminView 
-        ? `<button class="btn-orange" onclick="terimaItem('${key}')">Setujui</button>
-           <button class="btn-red" onclick="tolakItem('${key}')">Tolak</button>`
-        : `<button class="btn-orange" onclick="window.open('${item.urlFile}', '_blank')">Download</button>
-           <button class="btn-dark">Detail</button>`;
+    allItems.forEach(item => {
+       const btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn" style="background:var(--bg-elevated); border:1px solid red; color:red; padding:6px; flex:1;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
+       const badgeType = item.source === 'github' ? `<div style="position:absolute; top:10px; left:10px; background:#333; color:white; font-size:10px; padding:3px 6px; border-radius:4px; border:1px solid #555;">Via Update Web</div>` : '';
 
-    return `
-    <div class="list-item">
-        <img src="${item.urlGambar || 'https://via.placeholder.com/80'}" alt="Thumb">
-        <div class="list-info">
-            <h3>${item.judul}</h3>
-            <p>${(item.kategori || 'ALL').toUpperCase()} • MCPE ${item.versi || "0.15.10"}</p>
-            <div class="list-actions">${actionButtons}</div>
-        </div>
-    </div>`;
-}
-
-function terimaItem(key) {
-    db.ref('pending_items/' + key).once('value').then(snap => {
-        const data = snap.val();
-        db.ref('public_items').push(data).then(() => { db.ref('pending_items/' + key).remove(); });
+       let html = `
+        <div class="card" style="margin-bottom:15px;">
+          ${badgeType}
+          <img src="${item.url_img}" class="card-img" style="width:120px;" onerror="this.src='https://via.placeholder.com/120'">
+          <div class="card-body">
+            <h3 class="font-bold" style="font-size:16px; margin-bottom:4px;">${item.title}</h3>
+            <div style="font-size:11px; color:var(--primary); background:rgba(255, 140, 0, 0.1); padding:2px 6px; border-radius:4px; display:inline-block; font-weight:bold; margin-bottom:8px;">${item.category} ${item.version ? '• '+item.version : ''}</div>
+            <p style="font-size:13px; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px;">${item.desc_id || item.desc || ''}</p>
+            <div class="flex" style="gap:8px;">
+              <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="flex:2; text-align:center; padding:6px; text-decoration:none;">Download</a>
+              ${btnAdmin}
+            </div>
+          </div>
+        </div>`;
+       container.innerHTML += html;
     });
+  });
 }
-function tolakItem(key) {
-    if(confirm("Yakin ingin menolak item ini?")) db.ref('pending_items/' + key).remove();
+
+// ================= KIRIM & SELEKSI ITEM =================
+window.submitItem = async () => {
+  if (!currentUser) return;
+  const title = document.getElementById('add-title').value;
+  const cat = document.getElementById('add-cat').value;
+  const version = document.getElementById('add-version').value;
+  const desc_id = document.getElementById('add-desc').value;
+  const img = document.getElementById('add-img').value;
+  const file = document.getElementById('add-file').value;
+
+  if (!title || !img || !file) { alert("Judul, Gambar, dan File wajib diisi!"); return; }
+
+  const data = {
+    title: title, category: cat, version: version, desc_id: desc_id,
+    url_img: img, url_file: file,
+    uid: currentUser.uid, username: document.getElementById('profile-name').innerText,
+    createdAt: serverTimestamp()
+  };
+
+  try {
+    if (isAdmin) {
+      await push(ref(db, 'items_public'), data);
+      alert("Dipublikasikan langsung oleh Admin!");
+    } else {
+      await push(ref(db, 'items_pending'), data);
+      alert("Item Anda sedang direview oleh admin.");
+    }
+    // Bersihkan form
+    document.getElementById('add-title').value = ''; document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = ''; document.getElementById('add-file').value = '';
+    window.switchScreen('screen-home');
+  } catch (e) { alert("Gagal mengirim."); }
+};
+
+// LOAD ITEM PENDING (KHUSUS ADMIN)
+function loadPendingItems() {
+  if(!isAdmin) return;
+  onValue(ref(db, 'items_pending'), (snapshot) => {
+    const container = document.getElementById('pending-items-container');
+    const badgeCount = document.getElementById('pending-count');
+    container.innerHTML = '';
+    
+    let count = 0;
+    if (snapshot.exists()) {
+      snapshot.forEach(child => {
+        count++;
+        const item = child.val();
+        container.innerHTML += `
+          <div class="card" style="border: 1px solid var(--primary); margin-bottom:15px; padding:15px; display:block;">
+            <h4 class="font-bold">${item.title}</h4>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Kategori: ${item.category} | Pengirim: ${item.username}</p>
+            <div class="flex" style="gap:10px;">
+              <button class="btn" style="background:#28a745; color:white;" onclick="window.approveItem('${child.key}')">Terima</button>
+              <button class="btn" style="background:var(--danger); color:white;" onclick="window.rejectItem('${child.key}')">Tolak</button>
+            </div>
+          </div>`;
+      });
+    } else {
+      container.innerHTML = '<p style="color: var(--text-muted); text-align:center;">Tidak ada antrean.</p>';
+    }
+    if(badgeCount) badgeCount.innerText = count;
+  });
 }
+
+window.approveItem = async (id) => {
+  const snap = await get(ref(db, `items_pending/${id}`));
+  if(snap.exists()){
+     await set(ref(db, `items_public/${id}`), snap.val());
+     await remove(ref(db, `items_pending/${id}`));
+  }
+};
+
+window.rejectItem = async (id) => {
+  if (confirm("Tolak item ini?")) await remove(ref(db, `items_pending/${id}`));
+};
+
+window.deletePublicItem = async (id, title) => {
+  if(confirm(`Hapus Item Publik: "${title}"?`)) {
+    await remove(ref(db, `items_public/${id}`));
+  }
+};
