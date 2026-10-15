@@ -34,12 +34,10 @@ let lastCommentTime = 0;
 let autoTranslateEnabled = localStorage.getItem('autoTranslate') === 'true';
 let currentLang = localStorage.getItem('lang') || 'id';
 
-
 // ================= DICTIONARY TRANSLATE =================
 const dict = {
   'id': {
-    verifying_session: "Memverifikasi sesi...",
-    login_title: "Masuk ke Akun", login_subtitle: "Belum punya akun?", login_switch: "Daftar di sini", login_btn: "Masuk", or_via: "atau via", login_google: "Masuk dengan Google",
+    verifying_session: "Memverifikasi sesi...", login_title: "Masuk ke Akun", login_subtitle: "Belum punya akun?", login_switch: "Daftar di sini", login_btn: "Masuk", or_via: "atau via", login_google: "Masuk dengan Google",
     create_username_title: "Buat Username", create_username_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).", save_username: "Simpan Username",
     my_profile: "Profil Saya", change_photo: "UBAH FOTO", logout: "Keluar Akun", submit_new_item: "Kirim Baru", cancel: "Batal",
     category_label: "Kategori*", title_label: "Judul Item*", version_label: "Versi MCPE*", server_name_label: "Nama Server*", server_ip_label: "IP Server*", server_port_label: "Port*", supported_version_label: "Versi yang Didukung*", desc_label: "Deskripsi*", img_preview_label: "Gambar Preview*", choose_file: "Pilih File", file_download_label: "File Download / Mod*", upload_now: "Upload Sekarang",
@@ -47,8 +45,7 @@ const dict = {
     error_file_type: "File yang dipilih bukan gambar!", error_file_size: "Ukuran foto maksimal 5 MB!", error_save: "Gagal menyimpan: ", error_offline: "Periksa koneksi internet.", auto_translate: "Auto-Translate: ", already_in_lang: "Sudah dalam bahasa ini", edit_bio: "Edit Bio (Maks 80 kar):", save_bio: "Simpan Bio", joined: "Bergabung", items_published: "Item Publik", email_placeholder: "Alamat Email", password_placeholder: "Password (Min 6)", write_comment_placeholder: "Tulis komentar..."
   },
   'en': {
-    verifying_session: "Verifying session...",
-    login_title: "Sign In", login_subtitle: "Don't have an account?", login_switch: "Sign up here", login_btn: "Sign In", or_via: "or via", login_google: "Sign in with Google",
+    verifying_session: "Verifying session...", login_title: "Sign In", login_subtitle: "Don't have an account?", login_switch: "Sign up here", login_btn: "Sign In", or_via: "or via", login_google: "Sign in with Google",
     create_username_title: "Create Username", create_username_desc: "Letters, numbers, and underscores only (3-16 chars).", save_username: "Save Username",
     my_profile: "My Profile", change_photo: "CHANGE PHOTO", logout: "Logout", submit_new_item: "Submit New", cancel: "Cancel",
     category_label: "Category*", title_label: "Item Title*", version_label: "MCPE Version*", server_name_label: "Server Name*", server_ip_label: "Server IP*", server_port_label: "Port*", supported_version_label: "Supported Version*", desc_label: "Description*", img_preview_label: "Preview Image*", choose_file: "Choose File", file_download_label: "Download File / Mod*", upload_now: "Upload Now",
@@ -223,7 +220,7 @@ window.closeAllDrawers = () => { document.querySelectorAll('.side-drawer').forEa
 
 function getRoleBadge(role) {
     if (role === 'admin' || role === 'dev') return `<span class="badge-role badge-dev"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> Dev</span>`;
-    if (role === 'member') return `<span class="badge-role badge-verified">Member</span>`;
+    if (role === 'user' || role === 'member') return `<span class="badge-role badge-verified">Member</span>`;
     return '';
 }
 
@@ -267,64 +264,106 @@ function updateHeaderAuthUI() {
     }
 }
 
+// Proceed to Home logic
+function proceedToHome(user, pData) {
+     currentUsername = pData.username;
+     isAdmin = pData.role === 'admin' || pData.role === 'dev';
+     
+     document.getElementById('profile-name').innerText = currentUsername; document.getElementById('sidebar-name').innerText = currentUsername;
+     const dp = pData.avatar || user.photoURL || generateDefaultAvatar(currentUsername);
+     document.getElementById('profile-img').src = dp; document.getElementById('sidebar-profile-img').src = dp;
+     
+     const rBadge = getRoleBadge(isAdmin ? 'admin' : 'user');
+     document.getElementById('profile-role-badge').innerHTML = rBadge; document.getElementById('sidebar-role').innerHTML = rBadge;
+     if(isAdmin) document.getElementById('btn-open-admin').classList.remove('hidden'); else document.getElementById('btn-open-admin').classList.add('hidden');
+     
+     if(isAdmin) loadPendingItems();
+     listenNotifications();
+     window.switchScreen('screen-home');
+     fetchAllItemsAndRender();
+}
+
 setPersistence(auth, browserLocalPersistence).then(() => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user; updateHeaderAuthUI();
-      const pSnap = await get(ref(db, `profiles/${user.uid}`));
-      
-      if (pSnap.exists() && pSnap.val().username) {
-         const pData = pSnap.val();
-         currentUsername = pData.username;
-         isAdmin = pData.role === 'admin' || pData.role === 'dev';
-         
-         document.getElementById('profile-name').innerText = currentUsername; document.getElementById('sidebar-name').innerText = currentUsername;
-         const dp = pData.avatar || user.photoURL || generateDefaultAvatar(currentUsername);
-         document.getElementById('profile-img').src = dp; document.getElementById('sidebar-profile-img').src = dp;
-         
-         const rBadge = getRoleBadge(isAdmin ? 'admin' : 'member');
-         document.getElementById('profile-role-badge').innerHTML = rBadge; document.getElementById('sidebar-role').innerHTML = rBadge;
-         if(isAdmin) document.getElementById('btn-open-admin').classList.remove('hidden'); else document.getElementById('btn-open-admin').classList.add('hidden');
-         
-         if(isAdmin) loadPendingItems();
-         listenNotifications();
-         window.switchScreen('screen-home');
-      } else {
-         window.switchScreen('screen-username');
+      try {
+          const pSnap = await get(ref(db, `profiles/${user.uid}`));
+          if (pSnap.exists() && pSnap.val().username) {
+             proceedToHome(user, pSnap.val());
+          } else {
+             // Cek jika butuh migrasi dari users
+             const oldUserSnap = await get(ref(db, `users/${user.uid}/username`));
+             if (oldUserSnap.exists() && oldUserSnap.val()) {
+                 const oldUsername = oldUserSnap.val();
+                 const oldUserLower = oldUsername.toLowerCase();
+                 const isAdm = (await get(ref(db, `admins/${user.uid}`))).val() === true;
+                 
+                 const updates = {};
+                 updates[`profiles/${user.uid}`] = {
+                     username: oldUsername,
+                     role: isAdm ? 'admin' : 'user',
+                     joinedAt: serverTimestamp(),
+                     avatar: user.photoURL || '',
+                     itemCount: 0
+                 };
+                 updates[`usernames/${oldUserLower}`] = user.uid;
+                 await update(ref(db), updates);
+                 proceedToHome(user, updates[`profiles/${user.uid}`]);
+             } else {
+                 window.switchScreen('screen-username');
+             }
+          }
+      } catch (err) {
+          console.error(err);
+          document.getElementById('screen-error-msg').innerText = "Gagal memuat akun: " + err.message;
+          window.switchScreen('screen-error');
       }
     } else {
       currentUser = null; currentUsername = null; isAdmin = false; updateHeaderAuthUI();
       window.switchScreen('screen-home');
+      fetchAllItemsAndRender();
     }
-    fetchAllItemsAndRender(); window.applyLanguage();
+    window.applyLanguage();
   });
-}).catch(() => { window.switchScreen('screen-home'); fetchAllItemsAndRender(); });
+}).catch(() => { 
+    window.switchScreen('screen-home'); fetchAllItemsAndRender(); 
+});
 
 window.saveUsername = async () => {
   const username = document.getElementById('input-username').value.trim();
-  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { document.getElementById('username-error').innerText = "Format salah (3-16 char)"; return; }
+  const usernameLower = username.toLowerCase();
+  const errEl = document.getElementById('username-error');
+  const btn = document.getElementById('btn-save-username');
+  
+  if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) { errEl.innerText = t('create_username_desc'); return; }
+  
+  btn.disabled = true; btn.innerText = "Menyimpan..."; errEl.innerText = "";
   try {
-    const unSnap = await get(ref(db, `usernames/${username}`));
-    if (unSnap.exists() && unSnap.val() !== currentUser.uid) { document.getElementById('username-error').innerText = "Username terpakai!"; return; }
+    const unSnap = await get(ref(db, `usernames/${usernameLower}`));
+    if (unSnap.exists() && unSnap.val() !== currentUser.uid) { 
+        errEl.innerText = "Username terpakai!"; btn.disabled = false; btn.innerText = t('save_username'); return; 
+    }
     
     const isAdm = (await get(ref(db, `admins/${currentUser.uid}`))).val() === true;
     const dp = currentUser.photoURL || generateDefaultAvatar(username);
 
-    await set(ref(db, `usernames/${username}`), currentUser.uid);
-    await set(ref(db, `profiles/${currentUser.uid}`), { username: username, avatar: dp, role: isAdm ? 'admin' : 'member', joinedAt: serverTimestamp(), itemCount: 0 });
+    const updates = {};
+    updates[`usernames/${usernameLower}`] = currentUser.uid;
+    updates[`profiles/${currentUser.uid}`] = { 
+        username: username, avatar: dp, role: isAdm ? 'admin' : 'user', joinedAt: serverTimestamp(), itemCount: 0 
+    };
     
-    currentUsername = username; isAdmin = isAdm;
-    document.getElementById('profile-name').innerText = username; document.getElementById('sidebar-name').innerText = username;
-    document.getElementById('profile-img').src = dp; document.getElementById('sidebar-profile-img').src = dp;
-    const rBadge = getRoleBadge(isAdmin ? 'admin' : 'member');
-    document.getElementById('profile-role-badge').innerHTML = rBadge; document.getElementById('sidebar-role').innerHTML = rBadge;
-    if(isAdmin) { document.getElementById('btn-open-admin').classList.remove('hidden'); loadPendingItems(); }
+    await update(ref(db), updates);
+    proceedToHome(currentUser, updates[`profiles/${currentUser.uid}`]);
     
-    listenNotifications(); window.switchScreen('screen-home');
-  } catch (e) { document.getElementById('username-error').innerText = t('error_save')+e.message; }
+  } catch (e) { 
+      errEl.innerText = "Akses ditolak, hubungi admin. " + e.message;
+      btn.disabled = false; btn.innerText = t('save_username');
+  }
 };
 
-// ================= UPLOAD FOTO PROFIL KE RTDB =================
+// ================= UPLOAD FOTO PROFIL KE RTDB (/profiles) =================
 window.handleProfileUpload = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -358,6 +397,7 @@ window.handleProfileUpload = async (event) => {
                   if (base64Image.length > 40000) throw new Error("Gambar terlalu kompleks.");
               }
 
+              // Hanya simpan ke /profiles/{uid}/avatar. JANGAN KE AUTH.
               await update(ref(db, `profiles/${currentUser.uid}`), { avatar: base64Image });
               
               document.getElementById('profile-img').src = base64Image; document.getElementById('sidebar-profile-img').src = base64Image;
@@ -507,9 +547,10 @@ window.openDetail = async (itemId) => {
     loadComments(itemId);
     if(currentUser){ document.getElementById('comment-form-container').classList.remove('hidden'); document.getElementById('comment-login-prompt').classList.add('hidden'); } 
     else { document.getElementById('comment-form-container').classList.add('hidden'); document.getElementById('comment-login-prompt').classList.remove('hidden'); }
-    document.getElementById('detail-modal').classList.add('active');
+    document.getElementById('screen-detail-container').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
-window.closeDetailAndLogin = () => { document.getElementById('detail-modal').classList.remove('active'); window.switchScreen('screen-login'); }
+window.closeDetailAndLogin = () => { document.getElementById('screen-detail-container').classList.remove('active'); document.body.style.overflow=''; window.switchScreen('screen-login'); }
 
 let globalProfilesCache = {};
 function renderItemsToUI() {
@@ -523,7 +564,6 @@ function renderItemsToUI() {
 
   let htmlBuf = '';
   displayItems.forEach(item => {
-      const isUploaderAdmin = item.source === 'github'; 
       const userRoleBadge = item.source === 'github' ? getRoleBadge('dev') : `<span id="badge-${item.id}"></span>`;
       if(item.uid) { get(ref(db, `profiles/${item.uid}`)).then(s=>{ if(s.exists()){ const el=document.getElementById(`badge-${item.id}`); if(el) el.innerHTML = getRoleBadge(s.val().role); } }); }
 
@@ -540,7 +580,7 @@ function renderItemsToUI() {
       }
 
       htmlBuf += `
-      <div class="${cardClass}" style="margin-bottom:15px; cursor:pointer;" onclick="window.openDetail('${item.id}')">
+      <div class="${cardClass}" style="margin-bottom:15px;" onclick="window.openDetail('${item.id}')">
         <div class="card-img-wrapper"><img src="${item.url_img}" class="card-img" onerror="this.src='https://via.placeholder.com/300'"></div>
         <div class="card-body">
           <h3 class="font-bold" style="font-size:16px; margin-bottom:4px;">${item.title}</h3>
@@ -599,7 +639,6 @@ window.submitItem = async () => {
     else { await push(ref(db, 'items_pending'), data); window.showModalAlert("Terkirim ke antrean!"); }
     
     get(ref(db, `profiles/${currentUser.uid}/itemCount`)).then(s=>{ update(ref(db, `profiles/${currentUser.uid}`), {itemCount: (s.val()||0)+1}); });
-
     window.switchScreen('screen-home');
   } catch (e) { window.showModalAlert(t('error_save')); }
   document.getElementById('btn-submit-item').disabled = false;
@@ -640,12 +679,12 @@ window.approveItem = async (id, uid, title) => {
   const snap = await get(ref(db, `items_pending/${id}`));
   if(snap.exists()){ await set(ref(db, `items_public/${id}`), snap.val()); await remove(ref(db, `items_pending/${id}`)); await push(ref(db, `notifications/${uid}`), { type: 'accepted', title: title, time: serverTimestamp(), read: false }); window.showModalAlert("Disetujui!"); }
 };
-window.promptReject = (id, uid, title) => { currentRejectItem = { id, uid, title }; document.getElementById('reject-reason').value = ''; window.openDialog('reject-modal'); };
+window.promptReject = (id, uid, title) => { currentRejectItem = { id, uid, title }; document.getElementById('reject-reason').value = ''; window.openDialog('dialog-reject-admin'); };
 window.submitReject = async () => {
   if (!currentRejectItem) return;
   await remove(ref(db, `items_pending/${currentRejectItem.id}`));
   await push(ref(db, `notifications/${currentRejectItem.uid}`), { type: 'rejected', title: currentRejectItem.title, reason: document.getElementById('reject-reason').value.trim() || '-', time: serverTimestamp(), read: false });
-  window.closeDialog('reject-modal'); window.showModalAlert("Ditolak."); currentRejectItem = null;
+  window.closeDialog('dialog-reject-admin'); window.showModalAlert("Ditolak."); currentRejectItem = null;
 };
 window.deletePublicItem = (id, title) => { window.showModalConfirm(`Hapus permanen: "${title}"?`, async () => { await remove(ref(db, `items_public/${id}`)); }); };
 
