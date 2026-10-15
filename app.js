@@ -27,7 +27,7 @@ let currentSearchQuery = '';
 
 let localImageBase64 = null;
 let localFileBase64 = null;
-let currentRejectItem = null; // Penampung data saat menolak item
+let currentRejectItem = null;
 
 // ================= CUSTOM MODALS =================
 window.showModalAlert = (msg) => {
@@ -71,13 +71,12 @@ window.closeAllDrawers = () => {
   document.getElementById('drawer-overlay').classList.remove('active');
 };
 
-// ================= BADGE HELPER =================
+// ================= BADGE HELPER (Khusus Admin Biru, Sisanya Outline) =================
 function getRoleBadge(userIsAdmin) {
   if (userIsAdmin) {
-    return `<span class="badge-role badge-dev" title="Developer"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> Dev</span>`;
+    return `<span class="badge-role badge-verified" title="Verified Admin"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;"><path d="M12 2L15 4L18.5 3.5L19.5 7L22.5 9L21 12L22.5 15L19.5 17L18.5 20.5L15 20L12 22L9 20L5.5 20.5L4.5 17L1.5 15L3 12L1.5 9L4.5 7L5.5 3.5L9 4L12 2ZM10.5 16L17 9.5L15.5 8L10.5 13L8 10.5L6.5 12L10.5 16Z"></path></svg> Admin</span>`;
   }
-  // Default verified badge untuk semua user login
-  return `<span class="badge-role badge-verified" title="Verified Member"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;"><path d="M12 2L15 4L18.5 3.5L19.5 7L22.5 9L21 12L22.5 15L19.5 17L18.5 20.5L15 20L12 22L9 20L5.5 20.5L4.5 17L1.5 15L3 12L1.5 9L4.5 7L5.5 3.5L9 4L12 2ZM10.5 16L17 9.5L15.5 8L10.5 13L8 10.5L6.5 12L10.5 16Z"></path></svg> V</span>`;
+  return `<span class="badge-role" style="background:transparent; color:var(--text-muted); border:1px solid var(--border-color); font-weight:normal;">Member</span>`;
 }
 
 // ================= AUTHENTICATION FLOW =================
@@ -129,7 +128,7 @@ setPersistence(auth, browserLocalPersistence).then(() => {
          document.getElementById('profile-img').src = dp;
          document.getElementById('sidebar-profile-img').src = dp;
          checkAdminStatus();
-         listenNotifications(); // Muat sistem notifikasi
+         listenNotifications();
       } else {
          window.switchScreen('screen-username');
       }
@@ -190,7 +189,6 @@ function listenNotifications() {
 
     notifs.forEach(notif => {
       if (!notif.read) unreadCount++;
-      const bgColor = notif.type === 'accepted' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)';
       const color = notif.type === 'accepted' ? 'var(--success)' : 'var(--danger)';
       const statusText = notif.type === 'accepted' ? 'Diterima & Dipublikasikan' : 'Ditolak';
 
@@ -216,7 +214,7 @@ window.markNotifRead = async (notifId) => {
   await set(ref(db, `notifications/${currentUser.uid}/${notifId}/read`), true);
 };
 
-// ================= UPLOAD FOTO PROFIL (10MB, CROP 1:1, KOMPRESI KANVAS) =================
+// ================= UPLOAD FOTO PROFIL (Max 10MB, Crop & Kompres) =================
 window.handleProfileUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -231,8 +229,8 @@ window.handleProfileUpload = (event) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const size = Math.min(img.width, img.height); // Crop kotak
-      const targetSize = Math.min(size, 800); // Kompresi maksimal resolusi 800x800
+      const size = Math.min(img.width, img.height);
+      const targetSize = Math.min(size, 800); 
       
       canvas.width = targetSize; canvas.height = targetSize;
       const ctx = canvas.getContext('2d');
@@ -240,7 +238,7 @@ window.handleProfileUpload = (event) => {
       const offsetY = (img.height - size) / 2;
       ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, targetSize, targetSize);
       
-      const base64Image = canvas.toDataURL('image/jpeg', 0.8); // Kompresi Kualitas 80% (sekitar 100-300KB)
+      const base64Image = canvas.toDataURL('image/jpeg', 0.8); 
       
       updateProfile(currentUser, { photoURL: base64Image }).then(() => {
         document.getElementById('profile-img').src = base64Image;
@@ -307,27 +305,24 @@ function renderItemsToUI() {
   const cardClass = isSpecific ? 'card-vertical' : 'card-horizontal';
 
   displayItems.forEach(item => {
-    const isUploaderAdmin = item.source === 'firebase' && isAdmin; // Dummy cek admin (sebaiknya simpan metadata di item, tapi kita pakai standar general)
-    const userRoleBadge = getRoleBadge(isUploaderAdmin); // Badge untuk nama uploader
+    // Karena ini dummy, kita asumsikan item dari GitHub pasti dari admin. 
+    // Item dari firebase kita cek boolean isAdmin (hanya jika yang buka aplikasi ini adalah admin).
+    // Idealnya di database disimpan 'uploader_role'. Kita pakai standar ini dulu.
+    const isUploaderAdmin = item.source === 'github' || (item.source === 'firebase' && isAdmin); 
+    const userRoleBadge = getRoleBadge(isUploaderAdmin); 
 
     let btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn btn-secondary" style="border:1px solid red; color:red; flex:none; padding:8px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
-    let badgeType = item.source === 'github' ? `<div class="badge-github">Via GitHub</div>` : '';
     
-    // Fitur API Status Server (Khusus Kategori Server)
+    // Fitur API Status Server
     let serverStatusHTML = '';
     if (item.category.toLowerCase() === 'server') {
-      const ip = item.version; // Asumsi versi menampung IP
+      const ip = item.version; 
       serverStatusHTML = `<div id="status-${item.id}" class="server-status"><span style="color:var(--text-muted);">Sedang mengecek status...</span></div>`;
-      
-      // Ping API mcsrvstat untuk Bedrock
       fetch(`https://api.mcsrvstat.us/bedrock/3/${ip}`).then(res => res.json()).then(data => {
         const el = document.getElementById(`status-${item.id}`);
         if(el) {
-          if(data.online) {
-             el.innerHTML = `<span class="text-success">● Online</span> | ${data.players.online}/${data.players.max} Players`;
-          } else {
-             el.innerHTML = `<span class="text-danger">● Offline</span>`;
-          }
+          if(data.online) { el.innerHTML = `<span class="text-success">● Online</span> | ${data.players.online}/${data.players.max} Players`; } 
+          else { el.innerHTML = `<span class="text-danger">● Offline</span>`; }
         }
       }).catch(() => {
         const el = document.getElementById(`status-${item.id}`);
@@ -337,13 +332,12 @@ function renderItemsToUI() {
 
     container.innerHTML += `
       <div class="${cardClass}" style="margin-bottom:15px;">
-        ${badgeType}
         <img src="${item.url_img}" class="card-img" onerror="this.src='https://via.placeholder.com/300'">
         <div class="card-body">
           <h3 class="font-bold" style="font-size:16px; margin-bottom:4px;">${item.title}</h3>
           
           <div style="font-size:11px; margin-bottom:8px; color:var(--text-muted);">
-             Oleh: <span class="text-main">${item.username || 'System'}</span> ${userRoleBadge}
+             Oleh: <span class="text-main">${item.username || 'StecyMaster'}</span> ${userRoleBadge}
           </div>
 
           <div class="card-meta">${item.category} ${item.version && item.category.toLowerCase() !== 'server' ? '• '+item.version : ''}</div>
@@ -448,14 +442,13 @@ function loadPendingItems() {
       snapshot.forEach(child => {
         count++;
         const item = child.val();
-        // UI Antrean dengan Opsi Test/Preview Lebar
         container.innerHTML += `
           <div class="card-vertical" style="border-color:var(--primary); margin-bottom:20px; display:block;">
             <div class="card-body">
               <h4 class="font-bold text-main" style="margin-bottom:5px;">${item.title}</h4>
               <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Pengirim: ${item.username} | Kategori: ${item.category}</p>
               
-              <div class="flex" style="gap:10px; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:15px;">
+              <div class="flex" style="gap:10px; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
                 <button class="btn btn-secondary" style="flex:1; padding:8px; font-size:12px;" onclick="window.open('${item.url_img}', '_blank')">Lihat Gambar</button>
                 <button class="btn btn-secondary" style="flex:1; padding:8px; font-size:12px;" onclick="window.open('${item.url_file}', '_blank')">Download Test</button>
               </div>
@@ -480,7 +473,6 @@ window.approveItem = async (id, uid, title) => {
      await set(ref(db, `items_public/${id}`), snap.val());
      await remove(ref(db, `items_pending/${id}`));
      
-     // Kirim Notifikasi ke User
      await push(ref(db, `notifications/${uid}`), {
         type: 'accepted', title: title, time: serverTimestamp(), read: false
      });
@@ -502,7 +494,6 @@ window.submitReject = async () => {
   
   await remove(ref(db, `items_pending/${id}`));
   
-  // Kirim Notifikasi Penolakan ke User
   await push(ref(db, `notifications/${uid}`), {
       type: 'rejected', title: title, reason: reason || 'Tidak ada alasan spesifik.', time: serverTimestamp(), read: false
   });
@@ -513,7 +504,7 @@ window.submitReject = async () => {
 };
 
 window.deletePublicItem = (id, title) => {
-  window.showModalConfirm(`Hapus secara permanen item: "${title}"?`, async () => {
+  window.showModalConfirm(`Hapus secara permanen item: "${title}" dari aplikasi?`, async () => {
     await remove(ref(db, `items_public/${id}`));
   });
 };
