@@ -36,7 +36,7 @@
     <div class="modal-box">
       <h3 class="text-danger font-bold" style="margin-bottom: 10px;">Tolak Item</h3>
       <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Berikan alasan penolakan untuk dikirim ke notifikasi user.</p>
-      <textarea id="reject-reason" class="input-field text-selectable" rows="3" placeholder="Contoh: Link file mati atau tidak sesuai kategori..."></textarea>
+      <textarea id="reject-reason" class="input-field text-selectable" rows="3" placeholder="Contoh: Link mati atau tidak sesuai kategori..."></textarea>
       <div class="flex" style="gap:10px;">
         <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('reject-modal').classList.remove('active')">Batal</button>
         <button class="btn btn-danger" style="flex:1;" onclick="window.submitReject()">Tolak Item</button>
@@ -71,7 +71,7 @@
   <div id="notif-drawer" class="side-drawer drawer-right">
     <div class="flex items-center justify-between" style="padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:15px;">
       <h3 class="font-bold text-main">Notifikasi</h3>
-      <button onclick="window.closeAllDrawers()" style="color:var(--text-muted);"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <button onclick="window.closeAllDrawers()" style="color:var(--text-muted); padding:5px;"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div id="notif-container" style="flex:1;">
       <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Belum ada notifikasi.</p>
@@ -115,10 +115,10 @@
 
   <!-- LAYAR USER (HOME) -->
   <div id="screen-home" class="app-container screen hidden">
-    <!-- Header 3 Kolom + Lonceng -->
+    <!-- Header Terpusat (Pakai Icon-btn) -->
     <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50;">
       <div style="flex: 1; display: flex; justify-content: flex-start;">
-        <button class="header-btn" onclick="window.toggleDrawer('side-drawer')" style="padding: 5px;">
+        <button class="icon-btn" onclick="window.toggleDrawer('side-drawer')">
           <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
       </div>
@@ -126,11 +126,12 @@
         <span class="text-primary">Stecy</span><span style="color: white;">Master</span>
       </div>
       <div style="flex: 1; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
-        <button class="header-btn" style="position:relative; padding:5px;" onclick="window.toggleDrawer('notif-drawer')">
+        <button class="icon-btn" onclick="window.toggleDrawer('notif-drawer')">
           <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           <span id="notif-badge" class="notif-badge-icon hidden">0</span>
         </button>
-        <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
+        <!-- Tombol Khusus Admin -->
+        <button id="btn-open-admin" class="hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
            <span style="background: var(--danger); color: white; font-size:10px; padding:6px 10px; border-radius:12px; font-weight:bold; display: flex; align-items: center; gap: 4px;">
              <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin
            </span>
@@ -146,7 +147,7 @@
       </div>
     </div>
 
-    <!-- Kategori Horizontal Baru -->
+    <!-- Kategori Horizontal -->
     <div class="category-container">
       <button class="chip active" onclick="window.setCategoryFilter('Semua', this)">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Semua
@@ -204,7 +205,7 @@
         <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar">
         <div class="avatar-overlay">UBAH FOTO</div>
       </div>
-      <div class="flex items-center justify-center">
+      <div class="flex items-center justify-center" style="margin-bottom: 5px;">
         <h2 id="profile-name" class="font-bold text-main">Player Name</h2>
         <div id="profile-role-badge"></div>
       </div>
@@ -227,7 +228,7 @@
   <!-- LAYAR TAMBAH ITEM -->
   <div id="screen-add" class="app-container screen hidden">
     <header class="flex items-center justify-between" style="padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
-      <button class="header-btn" onclick="window.switchScreen('screen-home')">Batal</button>
+      <button class="header-btn" style="padding:5px;" onclick="window.switchScreen('screen-home')">Batal</button>
       <div class="logo font-bold">Kirim Item Baru</div>
       <div style="width:40px;"></div>
     </header>
@@ -290,7 +291,7 @@
   <!-- LAYAR ADMIN (SELEKSI) -->
   <div id="screen-admin" class="app-container screen hidden">
     <header class="flex items-center justify-between" style="padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
-      <button class="header-btn" onclick="window.switchScreen('screen-home')">
+      <button class="header-btn" style="padding:5px;" onclick="window.switchScreen('screen-home')">
         <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       </button>
       <div class="logo font-bold">Panel Admin</div>
