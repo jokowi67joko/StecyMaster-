@@ -1,9 +1,11 @@
-/* ================= VARIABEL WARNA & TEMA ================= */
+/* ================= VARIABEL WARNA & TEMA (KONTRAST DIPERBAIKI) ================= */
 :root {
-  --bg-dark: #121212; --bg-surface: #1e1e1e; --bg-elevated: #2a2a2a;
+  --bg-dark: #161616; /* Abu-abu gelap, bukan hitam pekat */
+  --bg-surface: #222222;
+  --bg-elevated: #2c2c2c;
   --primary: #ff8c00; --primary-hover: #e07b00;
-  --text-main: #ffffff; --text-muted: #a0a0a0;
-  --border-color: #333333; --danger: #f44336; --success: #4caf50; --info: #2196f3;
+  --text-main: #ffffff; --text-muted: #aaaaaa;
+  --border-color: #3a3a3a; --danger: #f44336; --success: #4caf50; --info: #2196f3;
   --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -16,7 +18,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 input, textarea, select { font-family: inherit; outline: none; }
 
 /* ANTI-HIGHLIGHT & ANTI-SELEKSI */
-button, a, .chip, .card, .nav-item, .drawer-menu li, .avatar-container, img, svg, .header-btn, header, .logo, .card-meta {
+button, a, .chip, .card, .nav-item, .drawer-menu li, .avatar-container, img, svg, .header-btn, .icon-btn, header, .logo, .card-meta {
   -webkit-tap-highlight-color: transparent;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
@@ -34,6 +36,21 @@ input, textarea, .card-desc, p, h2, h3, h4, .text-selectable {
 
 /* Layout App */
 .app-container { max-width: 800px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-dark); position: relative; }
+
+/* Ikon Tombol Lingkaran (Hamburger & Lonceng) */
+.icon-btn {
+  color: var(--text-main);
+  background: var(--bg-elevated);
+  padding: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  position: relative;
+}
+.icon-btn:active { background: var(--border-color); }
 
 /* Search Box */
 .search-container { padding: 10px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); }
@@ -84,13 +101,13 @@ input, textarea, .card-desc, p, h2, h3, h4, .text-selectable {
 .chip svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
 .chip.active { background: rgba(255, 140, 0, 0.15); border-color: var(--primary); color: var(--primary); font-weight: bold; }
 
-/* Layout Cards */
+/* Layout Cards (Proporsi Gambar Diperbaiki) */
 .content-list { padding: 20px 20px 90px; display: flex; flex-direction: column; gap: 16px; }
-.card-horizontal { background: var(--bg-surface); border-radius: 12px; display: flex; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
-.card-horizontal .card-img { width: 120px; min-width: 120px; background: var(--bg-elevated); object-fit: cover; }
+.card-horizontal { background: var(--bg-surface); border-radius: 12px; display: flex; border: 1px solid var(--border-color); overflow: hidden; position: relative; align-items: stretch; }
+.card-horizontal .card-img { width: 140px; min-width: 140px; background: var(--bg-elevated); object-fit: cover; object-position: center; }
 .card-horizontal .card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .card-vertical { background: var(--bg-surface); border-radius: 12px; display: flex; flex-direction: column; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
-.card-vertical .card-img { width: 100%; height: 200px; background: var(--bg-elevated); object-fit: cover; }
+.card-vertical .card-img { width: 100%; height: 200px; background: var(--bg-elevated); object-fit: cover; object-position: center; }
 .card-vertical .card-body { padding: 15px; }
 
 .card-meta { font-size: 11px; color: var(--primary); background: rgba(255,140,0,0.1); padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; font-weight: bold; }
@@ -108,6 +125,6 @@ input, textarea, .card-desc, p, h2, h3, h4, .text-selectable {
 .splash-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
 
 /* Notifikasi UI */
-.notif-badge-icon { position: absolute; top: 0; right: 0; background: var(--danger); color: white; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 10px; border: 2px solid var(--bg-surface); }
+.notif-badge-icon { position: absolute; top: -2px; right: -2px; background: var(--danger); color: white; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 10px; border: 2px solid var(--bg-surface); }
 .notif-card { background: var(--bg-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; font-size: 13px; }
 .notif-card.unread { border-left: 4px solid var(--primary); }
