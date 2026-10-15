@@ -57,7 +57,7 @@ window.copyText = (text) => {
   });
 };
 
-// ================= CUSTOM BOTTOM SHEET (Form Options) =================
+// ================= CUSTOM BOTTOM SHEET =================
 const categoryOptions = ['Mod', 'Texture', 'Map', 'Launcher', 'Plugin Server', 'MCPE and Craftman', 'Server'];
 const versionOptions = ['0.15.10', '0.14.3', '0.14.3 - 0.15.10'];
 
@@ -77,7 +77,6 @@ window.selectCategoryForm = (cat) => {
    document.getElementById('selected-category-text').innerText = cat;
    window.closeBottomSheet();
    
-   // Form Dinamis Toggle
    if(cat === 'Server') {
        document.getElementById('form-standard-container').classList.add('hidden');
        document.getElementById('form-file-container').classList.add('hidden');
@@ -269,7 +268,7 @@ window.markNotifRead = async (notifId) => {
   await set(ref(db, `notifications/${currentUser.uid}/${notifId}/read`), true);
 };
 
-// ================= UPLOAD FOTO PROFIL (Max 10MB) =================
+// ================= UPLOAD FOTO PROFIL =================
 window.handleProfileUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -332,22 +331,24 @@ function fetchAllItemsAndRender() {
   });
 }
 
+// ================= API STATUS SERVER (MCPE / POCKETMINE-MP) =================
 function fetchServerStatus(id, target) {
-  fetch(`https://api.mcsrvstat.us/bedrock/3/${target}`)
+  const el = document.getElementById(`status-${id}`);
+  if (!el) return;
+
+  // Endpoint Bedrock v2 (lebih kompatibel dengan PocketMine-MP lawas MCPE 0.14.x)
+  fetch(`https://api.mcsrvstat.us/bedrock/2/${target}`)
     .then(res => res.json())
     .then(data => {
-      const el = document.getElementById(`status-${id}`);
-      if(el) {
-        if(data.online) { 
-           el.innerHTML = `<span class="status-indicator status-online"></span> <span class="text-success" style="margin-right:5px;">Online</span> <span style="color:var(--text-muted);">|</span> <b style="margin-left:5px;">${data.players.online}/${data.players.max}</b> <span style="color:var(--text-muted); font-weight:normal; margin-left:4px;">Players</span>`; 
-        } else { 
-           el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px;">Offline</span> <span style="color:var(--text-muted); font-weight:normal;">(Tidak dapat terhubung)</span>`; 
-        }
+      if(data.online) { 
+         el.innerHTML = `<span class="status-indicator status-online"></span> <span class="text-success" style="margin-right:5px;">Online</span> <span style="color:var(--text-muted);">|</span> <b style="margin-left:5px;">${data.players.online}/${data.players.max}</b> <span style="color:var(--text-muted); font-weight:normal; margin-left:4px;">Players</span>`; 
+      } else { 
+         // Membedakan Offline murni dengan protokol yang tidak dikenali
+         el.innerHTML = `<span class="status-indicator" style="background:#555;"></span> <span style="color:#aaa; margin-right:5px; font-weight:bold;">Tidak Terdeteksi</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Mungkin aktif, protokol terlalu lawas)</span>`; 
       }
     })
     .catch(() => {
-      const el = document.getElementById(`status-${id}`);
-      if(el) el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px;">Offline</span> <span style="color:var(--text-muted); font-weight:normal;">(Tidak ada respon API)</span>`;
+      el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px;">Error API</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Gagal koneksi ke API)</span>`;
     });
 }
 
@@ -418,7 +419,7 @@ function renderItemsToUI() {
              Oleh: <span class="text-main">${item.username || 'StecyMaster'}</span> ${userRoleBadge}
           </div>
 
-          <div class="card-meta">${item.category} ${item.version ? '• '+item.version : ''}</div>
+          <div class="card-meta">${item.category} ${item.version && item.category.toLowerCase() !== 'server' ? '• '+item.version : ''}</div>
           
           ${serverStatusHTML}
           
@@ -459,7 +460,7 @@ window.handleLocalFile = (e) => {
   reader.readAsDataURL(file);
 };
 
-// ================= KIRIM ITEM (Dinamis Kategori) =================
+// ================= KIRIM ITEM =================
 window.submitItem = async () => {
   if (!currentUser) return;
   
@@ -511,7 +512,6 @@ window.submitItem = async () => {
       window.showModalAlert("Berhasil dikirim! Item Anda sedang direview.");
     }
     
-    // Reset inputs
     document.getElementById('add-title').value = ''; document.getElementById('add-version').value = '';
     document.getElementById('add-server-name').value = ''; document.getElementById('add-server-ip').value = '';
     document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = '';
