@@ -13,8 +13,7 @@
 </head>
 <body>
 
-  <!-- ================= LAYAR SPLASH / LOADING AWAL ================= -->
-  <!-- Layar ini yang pertama kali muncul untuk mencegah kedipan UI -->
+  <!-- SPLASH SCREEN -->
   <div id="screen-splash" class="app-container screen splash-container">
     <div class="logo font-bold" style="font-size: 32px; margin-bottom: 30px;">
       <span class="text-primary">Stecy</span><span style="color: white;">Master</span>
@@ -23,7 +22,7 @@
     <p style="color: var(--text-muted); margin-top: 20px; font-size: 14px; font-weight: bold;">Memverifikasi sesi...</p>
   </div>
 
-  <!-- ================= CUSTOM MODAL ================= -->
+  <!-- CUSTOM MODAL UMUM -->
   <div id="custom-modal" class="modal-overlay">
     <div class="modal-box">
       <h3 id="modal-title" class="text-primary font-bold" style="margin-bottom: 10px;">Pesan</h3>
@@ -32,9 +31,22 @@
     </div>
   </div>
 
-  <!-- ================= SIDE DRAWER ================= -->
-  <div id="drawer-overlay" class="drawer-overlay" onclick="window.toggleSidebar()"></div>
-  <div id="side-drawer" class="side-drawer">
+  <!-- MODAL PENOLAKAN ADMIN -->
+  <div id="reject-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 class="text-danger font-bold" style="margin-bottom: 10px;">Tolak Item</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Berikan alasan penolakan untuk dikirim ke notifikasi user.</p>
+      <textarea id="reject-reason" class="input-field text-selectable" rows="3" placeholder="Contoh: Link file mati atau tidak sesuai kategori..."></textarea>
+      <div class="flex" style="gap:10px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('reject-modal').classList.remove('active')">Batal</button>
+        <button class="btn btn-danger" style="flex:1;" onclick="window.submitReject()">Tolak Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAWER KIRI (MENU UTAMA) -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="window.closeAllDrawers()"></div>
+  <div id="side-drawer" class="side-drawer drawer-left">
     <div style="text-align:center; padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:10px;">
       <img id="sidebar-profile-img" src="https://via.placeholder.com/60" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
       <h3 id="sidebar-name" style="margin-top:10px; font-size:16px;">Username</h3>
@@ -49,18 +61,24 @@
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 2.98.97 4.29L2 22l5.71-.97C9.02 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM12 16h-1v-4h1v4zm0-6h-1V8h1v2z" fill="currentColor" stroke="none"/></svg>
         Layanan / Bantuan
       </li>
-      <li style="color:var(--text-muted); cursor:default;">
-        <svg class="icon icon-sm" viewBox="0 0 24 24" style="stroke:currentColor;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        Versi 1.1.0 (Beta)
-      </li>
     </ul>
     <div style="margin-top:auto;">
       <button class="btn btn-secondary" onclick="window.customLogout()" style="width:100%; border-color:var(--danger); color:var(--danger);">Keluar Akun</button>
     </div>
   </div>
 
-  <!-- ================= LAYAR LOGIN / SIGN UP ================= -->
-  <!-- Class 'hidden' di-set dari awal agar tidak berkedip -->
+  <!-- DRAWER KANAN (NOTIFIKASI) -->
+  <div id="notif-drawer" class="side-drawer drawer-right">
+    <div class="flex items-center justify-between" style="padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:15px;">
+      <h3 class="font-bold text-main">Notifikasi</h3>
+      <button onclick="window.closeAllDrawers()" style="color:var(--text-muted);"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div id="notif-container" style="flex:1;">
+      <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Belum ada notifikasi.</p>
+    </div>
+  </div>
+
+  <!-- LAYAR LOGIN / SIGN UP -->
   <div id="screen-login" class="app-container screen hidden">
     <div style="margin: auto; padding: 30px; background: var(--bg-surface); border-radius: 12px; width: 90%; max-width: 400px; text-align: center; margin-top: 10vh; border: 1px solid var(--border-color);">
       <h2 class="text-primary font-bold" id="auth-title-text" style="font-size: 24px; margin-bottom: 5px;">Masuk ke Akun</h2>
@@ -68,20 +86,15 @@
         <span id="auth-subtitle-text">Belum punya akun?</span>
         <span onclick="window.toggleAuthMode()" id="auth-switch-text" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;">Daftar di sini</span>
       </p>
-
-      <input type="email" id="auth-email" placeholder="Alamat Email" class="input-field">
-      <input type="password" id="auth-password" placeholder="Password (Minimal 6 karakter)" class="input-field">
-      
+      <input type="email" id="auth-email" placeholder="Alamat Email" class="input-field text-selectable">
+      <input type="password" id="auth-password" placeholder="Password (Minimal 6 karakter)" class="input-field text-selectable">
       <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()">Masuk</button>
       <p id="login-error" class="text-danger" style="margin-top: 10px; font-size: 13px;"></p>
-
       <div class="flex items-center" style="margin: 20px 0; gap: 10px;">
         <hr style="flex:1; border-color:var(--border-color);">
         <span style="color:var(--text-muted); font-size:12px;">atau via</span>
         <hr style="flex:1; border-color:var(--border-color);">
       </div>
-      
-      <!-- Tombol Google dengan Ikon SVG Resmi -->
       <button class="btn btn-secondary" onclick="window.loginGoogle()">
         <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Masuk dengan Google
@@ -89,43 +102,51 @@
     </div>
   </div>
 
-  <!-- ================= LAYAR BUAT USERNAME ================= -->
+  <!-- LAYAR BUAT USERNAME -->
   <div id="screen-username" class="app-container screen hidden" style="justify-content: center; padding: 20px;">
     <div style="background: var(--bg-surface); padding: 30px; border-radius: 12px; text-align: center; border: 1px solid var(--border-color);">
       <h2 class="text-primary font-bold" style="margin-bottom: 10px;">Buat Username</h2>
       <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
-      
-      <input type="text" id="input-username" placeholder="Cth: Steve_01" class="input-field">
+      <input type="text" id="input-username" placeholder="Cth: Steve_01" class="input-field text-selectable">
       <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()">Simpan Username</button>
       <p id="username-error" class="text-danger" style="margin-top: 10px; font-size: 14px;"></p>
     </div>
   </div>
 
-  <!-- ================= LAYAR USER (HOME) ================= -->
+  <!-- LAYAR USER (HOME) -->
   <div id="screen-home" class="app-container screen hidden">
-    <!-- Header dengan Layout 3-Zon (Terpusat) -->
+    <!-- Header 3 Kolom + Lonceng -->
     <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50;">
-      
       <div style="flex: 1; display: flex; justify-content: flex-start;">
-        <button class="header-btn" onclick="window.toggleSidebar()" style="padding: 5px;">
+        <button class="header-btn" onclick="window.toggleDrawer('side-drawer')" style="padding: 5px;">
           <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
       </div>
-
       <div class="logo font-bold" style="flex: 2; text-align: center;">
         <span class="text-primary">Stecy</span><span style="color: white;">Master</span>
       </div>
-
-      <div style="flex: 1; display: flex; justify-content: flex-end;">
+      <div style="flex: 1; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+        <button class="header-btn" style="position:relative; padding:5px;" onclick="window.toggleDrawer('notif-drawer')">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span id="notif-badge" class="notif-badge-icon hidden">0</span>
+        </button>
         <button id="btn-open-admin" class="header-btn hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
            <span style="background: var(--danger); color: white; font-size:10px; padding:6px 10px; border-radius:12px; font-weight:bold; display: flex; align-items: center; gap: 4px;">
-             <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-             Admin
+             <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin
            </span>
         </button>
       </div>
     </header>
 
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-box">
+        <svg class="icon icon-sm" style="color:var(--text-muted);" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="search-input" class="text-selectable" placeholder="Cari item, mod, atau server..." oninput="window.handleSearch(this.value)">
+      </div>
+    </div>
+
+    <!-- Kategori Horizontal Baru -->
     <div class="category-container">
       <button class="chip active" onclick="window.setCategoryFilter('Semua', this)">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Semua
@@ -142,6 +163,15 @@
       <button class="chip" onclick="window.setCategoryFilter('Launcher', this)">
         <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> Launcher
       </button>
+      <button class="chip" onclick="window.setCategoryFilter('Plugin Server', this)">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> Plugin Server
+      </button>
+      <button class="chip" onclick="window.setCategoryFilter('MCPE and Craftman', this)">
+        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="17" cy="12" r="2"></circle><path d="M7 12h4m-2-2v4"></path></svg> MCPE & Craftman
+      </button>
+      <button class="chip" onclick="window.setCategoryFilter('Server', this)">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="5" rx="1"></rect><rect x="2" y="15" width="20" height="5" rx="1"></rect><circle cx="6" cy="6.5" r="1"></circle><circle cx="6" cy="17.5" r="1"></circle></svg> Server
+      </button>
     </div>
 
     <!-- List Item Publik -->
@@ -152,54 +182,49 @@
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
       <button class="nav-item active" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Beranda</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span>Beranda</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-add')">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>Upload</span>
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>Upload</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-profile')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profil</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span>Profil</span>
       </button>
     </nav>
   </div>
 
-  <!-- ================= LAYAR PROFIL ================= -->
+  <!-- LAYAR PROFIL -->
   <div id="screen-profile" class="app-container screen hidden">
     <header class="flex items-center" style="gap: 15px; padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
       <div class="logo font-bold">Profil Saya</div>
     </header>
-    
     <div class="profile-header">
       <input type="file" id="profile-upload" accept="image/*" class="hidden" onchange="window.handleProfileUpload(event)">
       <div class="avatar-container" onclick="document.getElementById('profile-upload').click()">
         <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar">
         <div class="avatar-overlay">UBAH FOTO</div>
       </div>
-      <h2 id="profile-name" class="font-bold text-main" style="margin-bottom: 5px;">Player Name</h2>
-      <div id="profile-role-badge"></div>
+      <div class="flex items-center justify-center">
+        <h2 id="profile-name" class="font-bold text-main">Player Name</h2>
+        <div id="profile-role-badge"></div>
+      </div>
       <button class="btn btn-secondary" style="margin: 25px auto 0; width: 160px; border-color: var(--danger); color: var(--danger);" onclick="window.customLogout()">Keluar Akun</button>
     </div>
     
     <nav class="bottom-nav">
       <button class="nav-item" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Beranda</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span>Beranda</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-add')">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>Upload</span>
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>Upload</span>
       </button>
       <button class="nav-item active">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profil</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span>Profil</span>
       </button>
     </nav>
   </div>
 
-  <!-- ================= LAYAR TAMBAH ITEM ================= -->
+  <!-- LAYAR TAMBAH ITEM -->
   <div id="screen-add" class="app-container screen hidden">
     <header class="flex items-center justify-between" style="padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
       <button class="header-btn" onclick="window.switchScreen('screen-home')">Batal</button>
@@ -209,7 +234,7 @@
     <div style="padding: 20px; padding-bottom:100px;">
       
       <label class="form-label">Judul Item*</label>
-      <input type="text" id="add-title" placeholder="Contoh: Mod Senjata 3D" class="input-field">
+      <input type="text" id="add-title" placeholder="Contoh: Mod Senjata 3D" class="input-field text-selectable">
       
       <label class="form-label">Kategori*</label>
       <select id="add-cat" class="input-field">
@@ -217,28 +242,29 @@
         <option value="Texture">Texture</option>
         <option value="Map">Map</option>
         <option value="Launcher">Launcher</option>
+        <option value="Plugin Server">Plugin Server</option>
+        <option value="MCPE and Craftman">MCPE and Craftman</option>
+        <option value="Server">Server</option>
       </select>
       
-      <label class="form-label">Versi MCPE*</label>
-      <input type="text" id="add-version" placeholder="Contoh: 0.15.10" class="input-field">
+      <label class="form-label">Versi MCPE / IP Server*</label>
+      <input type="text" id="add-version" placeholder="Contoh: 0.15.10 atau play.server.com:19132" class="input-field text-selectable">
       
       <label class="form-label">Deskripsi Singkat*</label>
-      <textarea id="add-desc" placeholder="Tuliskan kegunaan mod ini..." rows="3" class="input-field"></textarea>
+      <textarea id="add-desc" placeholder="Tuliskan kegunaan item ini..." rows="3" class="input-field text-selectable"></textarea>
       
-      <!-- Opsi Upload Gambar -->
-      <label class="form-label">Gambar Preview* (Max 1MB)</label>
+      <label class="form-label">Gambar Preview* (Max 5MB)</label>
       <div class="flex" style="gap:10px;">
-        <input type="url" id="add-img" placeholder="URL Gambar" class="input-field" style="margin-bottom:0;">
+        <input type="url" id="add-img" placeholder="URL Gambar" class="input-field text-selectable" style="margin-bottom:0;">
         <label class="file-upload-box" style="margin-bottom:0; width:120px; flex:none;">
           Pilih File <input type="file" id="file-img" accept="image/*" onchange="window.handleLocalImage(event)">
         </label>
       </div>
       <p id="img-status" style="font-size:11px; color:var(--success); margin-bottom:15px; margin-top:5px;"></p>
 
-      <!-- Opsi Upload File ZIP/JS/APK -->
       <label class="form-label">File Download / Mod* (Max 5MB)</label>
       <div class="flex" style="gap:10px;">
-        <input type="url" id="add-file" placeholder="URL File Download" class="input-field" style="margin-bottom:0;">
+        <input type="url" id="add-file" placeholder="URL File Download" class="input-field text-selectable" style="margin-bottom:0;">
         <label class="file-upload-box" style="margin-bottom:0; width:120px; flex:none;">
           Pilih File <input type="file" id="file-doc" onchange="window.handleLocalFile(event)">
         </label>
@@ -250,21 +276,18 @@
     
     <nav class="bottom-nav">
       <button class="nav-item" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Beranda</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span>Beranda</span>
       </button>
       <button class="nav-item active">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>Upload</span>
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>Upload</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-profile')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profil</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span>Profil</span>
       </button>
     </nav>
   </div>
 
-  <!-- ================= LAYAR ADMIN (SELEKSI) ================= -->
+  <!-- LAYAR ADMIN (SELEKSI) -->
   <div id="screen-admin" class="app-container screen hidden">
     <header class="flex items-center justify-between" style="padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
       <button class="header-btn" onclick="window.switchScreen('screen-home')">
@@ -277,7 +300,6 @@
     <div style="background:var(--bg-surface); padding:15px; text-align:center; border-bottom:2px solid var(--primary); color:var(--primary); font-weight:bold;">
       Antrean (<span id="pending-count">0</span>)
     </div>
-
     <div id="pending-items-container" class="content-list" style="padding-top: 20px;">
       <p style="text-align:center; color: var(--text-muted);">Tidak ada antrean.</p>
     </div>
