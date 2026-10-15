@@ -51,6 +51,65 @@ window.showModalConfirm = (msg, onConfirmCallback) => {
   };
 };
 
+window.copyText = (text) => {
+  navigator.clipboard.writeText(text).then(() => {
+     window.showModalAlert(`Berhasil menyalin IP: ${text}`);
+  });
+};
+
+// ================= CUSTOM BOTTOM SHEET (Form Options) =================
+const categoryOptions = ['Mod', 'Texture', 'Map', 'Launcher', 'Plugin Server', 'MCPE and Craftman', 'Server'];
+const versionOptions = ['0.15.10', '0.14.3', '0.14.3 - 0.15.10'];
+
+window.openCategorySheet = () => {
+   document.getElementById('sheet-title').innerText = "Pilih Kategori";
+   const opts = document.getElementById('sheet-options');
+   opts.innerHTML = '';
+   const current = document.getElementById('selected-category-text').innerText;
+   categoryOptions.forEach(cat => {
+       const isSel = cat === current;
+       opts.innerHTML += `<div class="sheet-option ${isSel ? 'selected' : ''}" onclick="window.selectCategoryForm('${cat}')">${cat} ${isSel ? '<svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>`;
+   });
+   document.getElementById('bottom-sheet-overlay').classList.add('active');
+};
+
+window.selectCategoryForm = (cat) => {
+   document.getElementById('selected-category-text').innerText = cat;
+   window.closeBottomSheet();
+   
+   // Form Dinamis Toggle
+   if(cat === 'Server') {
+       document.getElementById('form-standard-container').classList.add('hidden');
+       document.getElementById('form-file-container').classList.add('hidden');
+       document.getElementById('form-server-container').classList.remove('hidden');
+   } else {
+       document.getElementById('form-standard-container').classList.remove('hidden');
+       document.getElementById('form-file-container').classList.remove('hidden');
+       document.getElementById('form-server-container').classList.add('hidden');
+   }
+};
+
+window.openVersionSheet = () => {
+   document.getElementById('sheet-title').innerText = "Versi yang Didukung";
+   const opts = document.getElementById('sheet-options');
+   opts.innerHTML = '';
+   const current = document.getElementById('selected-version-text').innerText;
+   versionOptions.forEach(ver => {
+       const isSel = ver === current;
+       opts.innerHTML += `<div class="sheet-option ${isSel ? 'selected' : ''}" onclick="window.selectVersionForm('${ver}')">${ver} ${isSel ? '<svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>`;
+   });
+   document.getElementById('bottom-sheet-overlay').classList.add('active');
+};
+
+window.selectVersionForm = (ver) => {
+   document.getElementById('selected-version-text').innerText = ver;
+   window.closeBottomSheet();
+};
+
+window.closeBottomSheet = () => {
+   document.getElementById('bottom-sheet-overlay').classList.remove('active');
+};
+
 // ================= UI SWITCHER & DRAWERS =================
 window.switchScreen = (id) => {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
@@ -71,10 +130,10 @@ window.closeAllDrawers = () => {
   document.getElementById('drawer-overlay').classList.remove('active');
 };
 
-// ================= BADGE HELPER (Khusus Admin Biru, Sisanya Outline) =================
+// ================= BADGE HELPER =================
 function getRoleBadge(userIsAdmin) {
   if (userIsAdmin) {
-    return `<span class="badge-role badge-verified" title="Verified Admin"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;"><path d="M12 2L15 4L18.5 3.5L19.5 7L22.5 9L21 12L22.5 15L19.5 17L18.5 20.5L15 20L12 22L9 20L5.5 20.5L4.5 17L1.5 15L3 12L1.5 9L4.5 7L5.5 3.5L9 4L12 2ZM10.5 16L17 9.5L15.5 8L10.5 13L8 10.5L6.5 12L10.5 16Z"></path></svg> Admin</span>`;
+    return `<span class="badge-role badge-dev" title="Developer"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> Dev</span>`;
   }
   return `<span class="badge-role" style="background:transparent; color:var(--text-muted); border:1px solid var(--border-color); font-weight:normal;">Member</span>`;
 }
@@ -185,7 +244,7 @@ function listenNotifications() {
 
     const notifs = [];
     snapshot.forEach(child => { notifs.push({ id: child.key, ...child.val() }); });
-    notifs.sort((a, b) => (b.time || 0) - (a.time || 0)); // Terbaru di atas
+    notifs.sort((a, b) => (b.time || 0) - (a.time || 0));
 
     notifs.forEach(notif => {
       if (!notif.read) unreadCount++;
@@ -201,12 +260,8 @@ function listenNotifications() {
       `;
     });
 
-    if (unreadCount > 0) {
-      badge.innerText = unreadCount;
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
-    }
+    if (unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove('hidden'); } 
+    else { badge.classList.add('hidden'); }
   });
 }
 
@@ -214,7 +269,7 @@ window.markNotifRead = async (notifId) => {
   await set(ref(db, `notifications/${currentUser.uid}/${notifId}/read`), true);
 };
 
-// ================= UPLOAD FOTO PROFIL (Max 10MB, Crop & Kompres) =================
+// ================= UPLOAD FOTO PROFIL (Max 10MB) =================
 window.handleProfileUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -277,17 +332,48 @@ function fetchAllItemsAndRender() {
   });
 }
 
+function fetchServerStatus(id, target) {
+  fetch(`https://api.mcsrvstat.us/bedrock/3/${target}`)
+    .then(res => res.json())
+    .then(data => {
+      const el = document.getElementById(`status-${id}`);
+      if(el) {
+        if(data.online) { 
+           el.innerHTML = `<span class="status-indicator status-online"></span> <span class="text-success" style="margin-right:5px;">Online</span> <span style="color:var(--text-muted);">|</span> <b style="margin-left:5px;">${data.players.online}/${data.players.max}</b> <span style="color:var(--text-muted); font-weight:normal; margin-left:4px;">Players</span>`; 
+        } else { 
+           el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px;">Offline</span> <span style="color:var(--text-muted); font-weight:normal;">(Tidak dapat terhubung)</span>`; 
+        }
+      }
+    })
+    .catch(() => {
+      const el = document.getElementById(`status-${id}`);
+      if(el) el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px;">Offline</span> <span style="color:var(--text-muted); font-weight:normal;">(Tidak ada respon API)</span>`;
+    });
+}
+
+// Auto-Refresh Status Server setiap 60 detik
+setInterval(() => {
+  if (!document.getElementById('screen-home').classList.contains('hidden')) {
+      if (currentCategoryFilter === 'Semua' || currentCategoryFilter === 'Server') {
+          const serverElements = document.querySelectorAll('.server-status');
+          serverElements.forEach(el => {
+              const target = el.getAttribute('data-target');
+              const id = el.id.replace('status-', '');
+              if (target) fetchServerStatus(id, target);
+          });
+      }
+  }
+}, 60000);
+
 function renderItemsToUI() {
   const container = document.getElementById('public-items-container');
   container.innerHTML = '';
   
-  // Filter by Category
   let displayItems = globalAllItems;
   if (currentCategoryFilter !== 'Semua') {
     displayItems = displayItems.filter(item => item.category.toLowerCase() === currentCategoryFilter.toLowerCase());
   }
   
-  // Filter by Search
   if (currentSearchQuery.trim() !== '') {
     displayItems = displayItems.filter(item => 
       item.title.toLowerCase().includes(currentSearchQuery) || 
@@ -305,29 +391,21 @@ function renderItemsToUI() {
   const cardClass = isSpecific ? 'card-vertical' : 'card-horizontal';
 
   displayItems.forEach(item => {
-    // Karena ini dummy, kita asumsikan item dari GitHub pasti dari admin. 
-    // Item dari firebase kita cek boolean isAdmin (hanya jika yang buka aplikasi ini adalah admin).
-    // Idealnya di database disimpan 'uploader_role'. Kita pakai standar ini dulu.
     const isUploaderAdmin = item.source === 'github' || (item.source === 'firebase' && isAdmin); 
     const userRoleBadge = getRoleBadge(isUploaderAdmin); 
 
     let btnAdmin = (isAdmin && item.source === 'firebase') ? `<button class="btn btn-secondary" style="border:1px solid red; color:red; flex:none; padding:8px;" onclick="window.deletePublicItem('${item.id}', '${item.title}')">Hapus</button>` : '';
     
-    // Fitur API Status Server
+    let actionBtnHTML = '';
     let serverStatusHTML = '';
+
     if (item.category.toLowerCase() === 'server') {
-      const ip = item.version; 
-      serverStatusHTML = `<div id="status-${item.id}" class="server-status"><span style="color:var(--text-muted);">Sedang mengecek status...</span></div>`;
-      fetch(`https://api.mcsrvstat.us/bedrock/3/${ip}`).then(res => res.json()).then(data => {
-        const el = document.getElementById(`status-${item.id}`);
-        if(el) {
-          if(data.online) { el.innerHTML = `<span class="text-success">● Online</span> | ${data.players.online}/${data.players.max} Players`; } 
-          else { el.innerHTML = `<span class="text-danger">● Offline</span>`; }
-        }
-      }).catch(() => {
-        const el = document.getElementById(`status-${item.id}`);
-        if(el) el.innerHTML = `<span style="color:var(--text-muted);">Data server tidak merespon</span>`;
-      });
+      const ipTarget = item.server_ip ? `${item.server_ip}:${item.server_port || 19132}` : item.version; 
+      serverStatusHTML = `<div id="status-${item.id}" class="server-status" data-target="${ipTarget}"><span class="loader-inline"></span><span style="color:var(--text-muted); margin-left:8px; font-weight:normal;">Mengecek server...</span></div>`;
+      actionBtnHTML = `<button class="btn btn-secondary" style="flex:1; border-color:var(--primary); color:var(--primary);" onclick="window.copyText('${ipTarget}')">Salin IP Server</button>`;
+      fetchServerStatus(item.id, ipTarget);
+    } else {
+      actionBtnHTML = `<a href="${item.url_file}" target="_blank" class="btn btn-primary" style="flex:1; text-align:center; padding:10px; text-decoration:none;">Download</a>`;
     }
 
     container.innerHTML += `
@@ -340,13 +418,13 @@ function renderItemsToUI() {
              Oleh: <span class="text-main">${item.username || 'StecyMaster'}</span> ${userRoleBadge}
           </div>
 
-          <div class="card-meta">${item.category} ${item.version && item.category.toLowerCase() !== 'server' ? '• '+item.version : ''}</div>
+          <div class="card-meta">${item.category} ${item.version ? '• '+item.version : ''}</div>
           
           ${serverStatusHTML}
           
           <p class="card-desc">${item.desc_id || item.desc || ''}</p>
           <div class="flex" style="gap:10px;">
-            <a href="${item.url_file}" target="_blank" class="btn btn-primary" style="flex:1; text-align:center; padding:10px; text-decoration:none;">Download</a>
+            ${actionBtnHTML}
             ${btnAdmin}
           </div>
         </div>
@@ -381,19 +459,32 @@ window.handleLocalFile = (e) => {
   reader.readAsDataURL(file);
 };
 
-// ================= KIRIM ITEM =================
+// ================= KIRIM ITEM (Dinamis Kategori) =================
 window.submitItem = async () => {
   if (!currentUser) return;
   
-  const title = document.getElementById('add-title').value.trim();
-  const cat = document.getElementById('add-cat').value;
-  const version = document.getElementById('add-version').value.trim();
+  const cat = document.getElementById('selected-category-text').innerText;
   const desc_id = document.getElementById('add-desc').value.trim();
   const finalImg = localImageBase64 || document.getElementById('add-img').value.trim();
-  const finalFile = localFileBase64 || document.getElementById('add-file').value.trim();
+  
+  let title, version, finalFile, serverIp, serverPort;
 
-  if (!title || !version || !desc_id || !finalImg || !finalFile) { 
-    window.showModalAlert("Gagal: Semua field wajib diisi!"); return; 
+  if (cat === 'Server') {
+    title = document.getElementById('add-server-name').value.trim();
+    serverIp = document.getElementById('add-server-ip').value.trim();
+    serverPort = document.getElementById('add-server-port').value.trim() || "19132";
+    version = document.getElementById('selected-version-text').innerText;
+    finalFile = '#'; 
+    if (!title || !serverIp || !desc_id || !finalImg) { 
+      window.showModalAlert("Gagal: Nama, IP Server, Deskripsi, dan Gambar wajib diisi!"); return; 
+    }
+  } else {
+    title = document.getElementById('add-title').value.trim();
+    version = document.getElementById('add-version').value.trim();
+    finalFile = localFileBase64 || document.getElementById('add-file').value.trim();
+    if (!title || !version || !desc_id || !finalImg || !finalFile) { 
+      window.showModalAlert("Gagal: Semua field wajib diisi!"); return; 
+    }
   }
 
   const btnSubmit = document.getElementById('btn-submit-item');
@@ -406,6 +497,11 @@ window.submitItem = async () => {
     createdAt: serverTimestamp()
   };
 
+  if(cat === 'Server') {
+    data.server_ip = serverIp;
+    data.server_port = serverPort;
+  }
+
   try {
     if (isAdmin) {
       await push(ref(db, 'items_public'), data);
@@ -414,7 +510,10 @@ window.submitItem = async () => {
       await push(ref(db, 'items_pending'), data);
       window.showModalAlert("Berhasil dikirim! Item Anda sedang direview.");
     }
+    
+    // Reset inputs
     document.getElementById('add-title').value = ''; document.getElementById('add-version').value = '';
+    document.getElementById('add-server-name').value = ''; document.getElementById('add-server-ip').value = '';
     document.getElementById('add-desc').value = ''; document.getElementById('add-img').value = '';
     document.getElementById('add-file').value = ''; document.getElementById('file-img').value = '';
     document.getElementById('file-doc').value = ''; document.getElementById('img-status').innerText = '';
@@ -424,7 +523,7 @@ window.submitItem = async () => {
     btnSubmit.disabled = false; btnSubmit.innerText = "Upload Sekarang";
     window.switchScreen('screen-home');
   } catch (e) { 
-    window.showModalAlert("Gagal mengirim data. Coba perkecil ukuran file."); 
+    window.showModalAlert("Gagal mengirim data."); 
     btnSubmit.disabled = false; btnSubmit.innerText = "Upload Sekarang";
   }
 };
@@ -442,6 +541,15 @@ function loadPendingItems() {
       snapshot.forEach(child => {
         count++;
         const item = child.val();
+        
+        let testBtnHTML = '';
+        if (item.category === 'Server') {
+            const ipTarget = item.server_ip ? `${item.server_ip}:${item.server_port}` : item.version;
+            testBtnHTML = `<button class="btn btn-secondary" style="flex:1; padding:8px; font-size:12px;" onclick="window.copyText('${ipTarget}')">Salin IP (Test)</button>`;
+        } else {
+            testBtnHTML = `<button class="btn btn-secondary" style="flex:1; padding:8px; font-size:12px;" onclick="window.open('${item.url_file}', '_blank')">Download Test</button>`;
+        }
+
         container.innerHTML += `
           <div class="card-vertical" style="border-color:var(--primary); margin-bottom:20px; display:block;">
             <div class="card-body">
@@ -450,7 +558,7 @@ function loadPendingItems() {
               
               <div class="flex" style="gap:10px; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
                 <button class="btn btn-secondary" style="flex:1; padding:8px; font-size:12px;" onclick="window.open('${item.url_img}', '_blank')">Lihat Gambar</button>
-                <button class="btn btn-secondary" style="flex:1; padding:8px; font-size:12px;" onclick="window.open('${item.url_file}', '_blank')">Download Test</button>
+                ${testBtnHTML}
               </div>
 
               <div class="flex" style="gap:10px;">
