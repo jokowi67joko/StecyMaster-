@@ -1,3 +1,4 @@
+// File: app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getDatabase, ref, onValue, set, get, update, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
@@ -34,23 +35,58 @@ let lastCommentTime = 0;
 let autoTranslateEnabled = localStorage.getItem('autoTranslate') === 'true';
 let currentLang = localStorage.getItem('lang') || 'id';
 
+
 // ================= DICTIONARY TRANSLATE =================
 const dict = {
   'id': {
-    verifying_session: "Memverifikasi sesi...", login_title: "Masuk ke Akun", login_subtitle: "Belum punya akun?", login_switch: "Daftar di sini", login_btn: "Masuk", or_via: "atau via", login_google: "Masuk dengan Google",
-    create_username_title: "Buat Username", create_username_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).", save_username: "Simpan Username",
-    my_profile: "Profil Saya", change_photo: "UBAH FOTO", logout: "Keluar Akun", submit_new_item: "Kirim Baru", cancel: "Batal",
-    category_label: "Kategori*", title_label: "Judul Item*", version_label: "Versi MCPE*", server_name_label: "Nama Server*", server_ip_label: "IP Server*", server_port_label: "Port*", supported_version_label: "Versi yang Didukung*", desc_label: "Deskripsi*", img_preview_label: "Gambar Preview*", choose_file: "Pilih File", file_download_label: "File Download / Mod*", upload_now: "Upload Sekarang",
-    admin_panel: "Panel Admin", queue: "Antrean", no_queue: "Tidak ada antrean.", nav_home: "Beranda", nav_upload: "Upload", nav_profile: "Profil", cat_all: "Semua", translate_ui: "Translate UI (ID/EN)", support: "Layanan / Bantuan", notifications: "Notifikasi", no_notifications: "Belum ada notifikasi.", search_placeholder: "Cari item, mod, atau server...", description: "Deskripsi", translate: "Terjemahkan", show_original: "Lihat asli", comments: "Komentar", post_comment: "Kirim Komentar", login_to_comment: "Silakan masuk untuk memberikan komentar.", loading_comments: "Memuat komentar...", reply: "Balas", delete: "Hapus", post_reply: "Kirim", cancel_reply: "Batal", show_replies: "Lihat {count} balasan", hide_replies: "Sembunyikan balasan", replying_to: "Membalas", info: "Informasi", ok: "Oke", confirm_title: "Konfirmasi",
-    error_file_type: "File yang dipilih bukan gambar!", error_file_size: "Ukuran foto maksimal 5 MB!", error_save: "Gagal menyimpan: ", error_offline: "Periksa koneksi internet.", auto_translate: "Auto-Translate: ", already_in_lang: "Sudah dalam bahasa ini", edit_bio: "Edit Bio (Maks 80 kar):", save_bio: "Simpan Bio", joined: "Bergabung", items_published: "Item Publik", email_placeholder: "Alamat Email", password_placeholder: "Password (Min 6)", write_comment_placeholder: "Tulis komentar..."
+    verifying_session: "Memverifikasi sesi...", login_title: "Masuk ke Akun", login_subtitle: "Belum punya akun?",
+    login_switch: "Daftar di sini", login_btn: "Masuk", or_via: "atau via", login_google: "Masuk dengan Google",
+    create_username_title: "Buat Username", create_username_desc: "Hanya huruf, angka, dan underscore (3-16 karakter).",
+    save_username: "Simpan Username", my_profile: "Profil Saya", change_photo: "UBAH FOTO", logout: "Keluar Akun",
+    submit_new_item: "Kirim Baru", cancel: "Batal", category_label: "Kategori*", title_label: "Judul Item*",
+    version_label: "Versi MCPE*", server_name_label: "Nama Server*", server_ip_label: "IP Server*",
+    server_port_label: "Port*", supported_version_label: "Versi yang Didukung*", desc_label: "Deskripsi*",
+    img_preview_label: "Gambar Preview*", choose_file: "Pilih File", file_download_label: "File Download / Mod*",
+    upload_now: "Upload Sekarang", admin_panel: "Panel Admin", queue: "Antrean", no_queue: "Tidak ada antrean.",
+    nav_home: "Beranda", nav_upload: "Upload", nav_profile: "Profil", cat_all: "Semua",
+    translate_ui: "Translate UI (ID/EN)", support: "Layanan / Bantuan", notifications: "Notifikasi",
+    no_notifications: "Belum ada notifikasi.", search_placeholder: "Cari item, mod, atau server...",
+    description: "Deskripsi", translate: "Terjemahkan", show_original: "Lihat asli", comments: "Komentar",
+    post_comment: "Kirim Komentar", login_to_comment: "Silakan masuk untuk memberikan komentar.",
+    loading_comments: "Memuat komentar...", reply: "Balas", delete: "Hapus", post_reply: "Kirim",
+    cancel_reply: "Batal", show_replies: "Lihat {count} balasan", hide_replies: "Sembunyikan balasan",
+    replying_to: "Membalas", info: "Informasi", ok: "Oke", confirm_title: "Konfirmasi",
+    error_file_type: "File yang dipilih bukan gambar!", error_file_size: "Ukuran foto maksimal 5 MB!",
+    error_save: "Gagal menyimpan: ", error_offline: "Periksa koneksi internet.", auto_translate: "Auto-Translate: ",
+    already_in_lang: "Sudah dalam bahasa ini", edit_bio: "Edit Bio (Maks 80 kar):", save_bio: "Simpan Bio",
+    joined: "Bergabung", items_published: "Item Publik", email_placeholder: "Alamat Email",
+    password_placeholder: "Password (Min 6)", write_comment_placeholder: "Tulis komentar...",
+    error_title: "Terjadi Kesalahan", error_load_account: "Gagal memuat akun, coba lagi.", try_again: "Coba Lagi"
   },
   'en': {
-    verifying_session: "Verifying session...", login_title: "Sign In", login_subtitle: "Don't have an account?", login_switch: "Sign up here", login_btn: "Sign In", or_via: "or via", login_google: "Sign in with Google",
-    create_username_title: "Create Username", create_username_desc: "Letters, numbers, and underscores only (3-16 chars).", save_username: "Save Username",
-    my_profile: "My Profile", change_photo: "CHANGE PHOTO", logout: "Logout", submit_new_item: "Submit New", cancel: "Cancel",
-    category_label: "Category*", title_label: "Item Title*", version_label: "MCPE Version*", server_name_label: "Server Name*", server_ip_label: "Server IP*", server_port_label: "Port*", supported_version_label: "Supported Version*", desc_label: "Description*", img_preview_label: "Preview Image*", choose_file: "Choose File", file_download_label: "Download File / Mod*", upload_now: "Upload Now",
-    admin_panel: "Admin Panel", queue: "Queue", no_queue: "No queue.", nav_home: "Home", nav_upload: "Upload", nav_profile: "Profile", cat_all: "All", translate_ui: "Translate UI (ID/EN)", support: "Support / Help", notifications: "Notifications", no_notifications: "No notifications yet.", search_placeholder: "Search items, mods, or servers...", description: "Description", translate: "Translate", show_original: "Show original", comments: "Comments", post_comment: "Post Comment", login_to_comment: "Please sign in to post a comment.", loading_comments: "Loading comments...", reply: "Reply", delete: "Delete", post_reply: "Send", cancel_reply: "Cancel", show_replies: "View {count} replies", hide_replies: "Hide replies", replying_to: "Replying to", info: "Information", ok: "OK", confirm_title: "Confirm",
-    error_file_type: "Selected file is not an image!", error_file_size: "Photo size max 5 MB!", error_save: "Failed to save: ", error_offline: "Check internet connection.", auto_translate: "Auto-Translate: ", already_in_lang: "Already in this language", edit_bio: "Edit Bio (Max 80 chars):", save_bio: "Save Bio", joined: "Joined", items_published: "Public Items", email_placeholder: "Email Address", password_placeholder: "Password (Min 6)", write_comment_placeholder: "Write a comment..."
+    verifying_session: "Verifying session...", login_title: "Sign In", login_subtitle: "Don't have an account?",
+    login_switch: "Sign up here", login_btn: "Sign In", or_via: "or via", login_google: "Sign in with Google",
+    create_username_title: "Create Username", create_username_desc: "Letters, numbers, and underscores only (3-16 chars).",
+    save_username: "Save Username", my_profile: "My Profile", change_photo: "CHANGE PHOTO", logout: "Logout",
+    submit_new_item: "Submit New", cancel: "Cancel", category_label: "Category*", title_label: "Item Title*",
+    version_label: "MCPE Version*", server_name_label: "Server Name*", server_ip_label: "Server IP*",
+    server_port_label: "Port*", supported_version_label: "Supported Version*", desc_label: "Description*",
+    img_preview_label: "Preview Image*", choose_file: "Choose File", file_download_label: "Download File / Mod*",
+    upload_now: "Upload Now", admin_panel: "Admin Panel", queue: "Queue", no_queue: "No queue.",
+    nav_home: "Home", nav_upload: "Upload", nav_profile: "Profile", cat_all: "All",
+    translate_ui: "Translate UI (ID/EN)", support: "Support / Help", notifications: "Notifications",
+    no_notifications: "No notifications yet.", search_placeholder: "Search items, mods, or servers...",
+    description: "Description", translate: "Translate", show_original: "Show original", comments: "Comments",
+    post_comment: "Post Comment", login_to_comment: "Please sign in to post a comment.",
+    loading_comments: "Loading comments...", reply: "Reply", delete: "Delete", post_reply: "Send",
+    cancel_reply: "Cancel", show_replies: "View {count} replies", hide_replies: "Hide replies",
+    replying_to: "Replying to", info: "Information", ok: "OK", confirm_title: "Confirm",
+    error_file_type: "Selected file is not an image!", error_file_size: "Photo size max 5 MB!",
+    error_save: "Failed to save: ", error_offline: "Check internet connection.", auto_translate: "Auto-Translate: ",
+    already_in_lang: "Already in this language", edit_bio: "Edit Bio (Max 80 chars):", save_bio: "Save Bio",
+    joined: "Joined", items_published: "Public Items", email_placeholder: "Email Address",
+    password_placeholder: "Password (Min 6)", write_comment_placeholder: "Write a comment...",
+    error_title: "An Error Occurred", error_load_account: "Failed to load account, please try again.", try_again: "Try Again"
   }
 };
 
@@ -220,7 +256,7 @@ window.closeAllDrawers = () => { document.querySelectorAll('.side-drawer').forEa
 
 function getRoleBadge(role) {
     if (role === 'admin' || role === 'dev') return `<span class="badge-role badge-dev"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> Dev</span>`;
-    if (role === 'user' || role === 'member') return `<span class="badge-role badge-verified">Member</span>`;
+    if (role === 'member') return `<span class="badge-role badge-verified">Member</span>`;
     return '';
 }
 
@@ -251,7 +287,13 @@ window.processEmailAuth = async () => {
   }
 };
 window.loginGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e){} };
-window.customLogout = () => { window.closeAllDrawers(); window.showModalConfirm(t('logout'), () => { signOut(auth).then(() => { isAdmin = false; currentUser = null; currentUsername = null; window.switchScreen('screen-login'); updateHeaderAuthUI();}); }); };
+
+window.customLogout = () => {
+  window.closeAllDrawers();
+  window.showModalConfirm(t('logout'), () => {
+    signOut(auth).then(() => { isAdmin = false; currentUser = null; currentUsername = null; window.switchScreen('screen-login'); updateHeaderAuthUI();});
+  });
+};
 
 function updateHeaderAuthUI() {
     if(currentUser) {
@@ -264,7 +306,7 @@ function updateHeaderAuthUI() {
     }
 }
 
-// Proceed to Home logic
+// Alur pemuatan setelah Auth
 function proceedToHome(user, pData) {
      currentUsername = pData.username;
      isAdmin = pData.role === 'admin' || pData.role === 'dev';
@@ -273,7 +315,7 @@ function proceedToHome(user, pData) {
      const dp = pData.avatar || user.photoURL || generateDefaultAvatar(currentUsername);
      document.getElementById('profile-img').src = dp; document.getElementById('sidebar-profile-img').src = dp;
      
-     const rBadge = getRoleBadge(isAdmin ? 'admin' : 'user');
+     const rBadge = getRoleBadge(pData.role);
      document.getElementById('profile-role-badge').innerHTML = rBadge; document.getElementById('sidebar-role').innerHTML = rBadge;
      if(isAdmin) document.getElementById('btn-open-admin').classList.remove('hidden'); else document.getElementById('btn-open-admin').classList.add('hidden');
      
@@ -292,22 +334,19 @@ setPersistence(auth, browserLocalPersistence).then(() => {
           if (pSnap.exists() && pSnap.val().username) {
              proceedToHome(user, pSnap.val());
           } else {
-             // Cek jika butuh migrasi dari users
-             const oldUserSnap = await get(ref(db, `users/${user.uid}/username`));
-             if (oldUserSnap.exists() && oldUserSnap.val()) {
-                 const oldUsername = oldUserSnap.val();
-                 const oldUserLower = oldUsername.toLowerCase();
-                 const isAdm = (await get(ref(db, `admins/${user.uid}`))).val() === true;
-                 
+             // Migrasi sekali jika ada di /users (menghindari error layar username terus-terusan)
+             const uSnap = await get(ref(db, `users/${user.uid}/username`));
+             if (uSnap.exists() && uSnap.val()) {
+                 const oldUsername = uSnap.val();
                  const updates = {};
+                 updates[`usernames/${oldUsername.toLowerCase()}`] = user.uid;
                  updates[`profiles/${user.uid}`] = {
                      username: oldUsername,
-                     role: isAdm ? 'admin' : 'user',
+                     role: 'member',
                      joinedAt: serverTimestamp(),
-                     avatar: user.photoURL || '',
+                     avatar: '',
                      itemCount: 0
                  };
-                 updates[`usernames/${oldUserLower}`] = user.uid;
                  await update(ref(db), updates);
                  proceedToHome(user, updates[`profiles/${user.uid}`]);
              } else {
@@ -315,7 +354,7 @@ setPersistence(auth, browserLocalPersistence).then(() => {
              }
           }
       } catch (err) {
-          console.error(err);
+          console.error("Gagal memuat akun:", err);
           document.getElementById('screen-error-msg').innerText = "Gagal memuat akun: " + err.message;
           window.switchScreen('screen-error');
       }
@@ -344,20 +383,18 @@ window.saveUsername = async () => {
     if (unSnap.exists() && unSnap.val() !== currentUser.uid) { 
         errEl.innerText = "Username terpakai!"; btn.disabled = false; btn.innerText = t('save_username'); return; 
     }
-    
-    const isAdm = (await get(ref(db, `admins/${currentUser.uid}`))).val() === true;
-    const dp = currentUser.photoURL || generateDefaultAvatar(username);
 
     const updates = {};
     updates[`usernames/${usernameLower}`] = currentUser.uid;
     updates[`profiles/${currentUser.uid}`] = { 
-        username: username, avatar: dp, role: isAdm ? 'admin' : 'user', joinedAt: serverTimestamp(), itemCount: 0 
+        username: username, avatar: '', role: 'member', joinedAt: serverTimestamp(), itemCount: 0 
     };
     
     await update(ref(db), updates);
-    proceedToHome(currentUser, updates[`profiles/${currentUser.uid}`]);
     
+    proceedToHome(currentUser, { username: username, role: 'member', avatar: '' });
   } catch (e) { 
+      console.error("Ditolak saat saveUsername:", e.message);
       errEl.innerText = "Akses ditolak, hubungi admin. " + e.message;
       btn.disabled = false; btn.innerText = t('save_username');
   }
@@ -397,7 +434,7 @@ window.handleProfileUpload = async (event) => {
                   if (base64Image.length > 40000) throw new Error("Gambar terlalu kompleks.");
               }
 
-              // Hanya simpan ke /profiles/{uid}/avatar. JANGAN KE AUTH.
+              // Simpan Langsung ke Database Profil, TANPA Auth updateProfile
               await update(ref(db, `profiles/${currentUser.uid}`), { avatar: base64Image });
               
               document.getElementById('profile-img').src = base64Image; document.getElementById('sidebar-profile-img').src = base64Image;
@@ -418,25 +455,26 @@ window.handleProfileUpload = async (event) => {
 // ================= USER PUBLIC PROFILE =================
 window.openUserProfile = async (uid) => {
     if(!currentUser) { window.showModalAlert(t('login_to_comment')); return; }
-    const pSnap = await get(ref(db, `profiles/${uid}`));
-    if(!pSnap.exists()) return;
-    const p = pSnap.val();
-    
-    document.getElementById('pub-profile-img').src = p.avatar || generateDefaultAvatar(p.username);
-    document.getElementById('pub-profile-name').innerText = p.username;
-    document.getElementById('pub-profile-role').innerHTML = getRoleBadge(p.role);
-    document.getElementById('pub-profile-bio').innerText = p.bio || (uid === currentUser.uid ? 'Belum ada bio.' : '');
-    document.getElementById('pub-profile-joined').innerText = formatDate(p.joinedAt);
-    document.getElementById('pub-profile-items').innerText = p.itemCount || 0;
-    
-    if(uid === currentUser.uid) {
-        document.getElementById('pub-profile-edit-section').classList.remove('hidden');
-        document.getElementById('input-pub-bio').value = p.bio || '';
-    } else {
-        document.getElementById('pub-profile-edit-section').classList.add('hidden');
-    }
-    
-    window.openDialog('dialog-user-profile');
+    try {
+        const pSnap = await get(ref(db, `profiles/${uid}`));
+        if(!pSnap.exists()) return;
+        const p = pSnap.val();
+        
+        document.getElementById('pub-profile-img').src = p.avatar || generateDefaultAvatar(p.username);
+        document.getElementById('pub-profile-name').innerText = p.username;
+        document.getElementById('pub-profile-role').innerHTML = getRoleBadge(p.role);
+        document.getElementById('pub-profile-bio').innerText = p.bio || (uid === currentUser.uid ? 'Belum ada bio.' : '');
+        document.getElementById('pub-profile-joined').innerText = formatDate(p.joinedAt);
+        document.getElementById('pub-profile-items').innerText = p.itemCount || 0;
+        
+        if(uid === currentUser.uid) {
+            document.getElementById('pub-profile-edit-section').classList.remove('hidden');
+            document.getElementById('input-pub-bio').value = p.bio || '';
+        } else {
+            document.getElementById('pub-profile-edit-section').classList.add('hidden');
+        }
+        window.openDialog('dialog-user-profile');
+    } catch(e) { window.showModalAlert("Gagal memuat profil."); }
 };
 
 window.saveBio = async () => {
@@ -514,8 +552,10 @@ window.openDetail = async (itemId) => {
     
     let uploaderRole = 'member'; let avatarUrl = generateDefaultAvatar(item.username);
     if(item.uid) {
-         const pSnap = await get(ref(db, `profiles/${item.uid}`));
-         if(pSnap.exists()) { const p = pSnap.val(); uploaderRole = p.role; avatarUrl = p.avatar; }
+         try {
+             const pSnap = await get(ref(db, `profiles/${item.uid}`));
+             if(pSnap.exists()) { const p = pSnap.val(); uploaderRole = p.role; avatarUrl = p.avatar || generateDefaultAvatar(item.username); }
+         } catch(e){}
     } else if (item.source === 'github') uploaderRole = 'dev';
     
     document.getElementById('detail-uploader-badge').innerHTML = getRoleBadge(uploaderRole);
@@ -564,6 +604,7 @@ function renderItemsToUI() {
 
   let htmlBuf = '';
   displayItems.forEach(item => {
+      const isUploaderAdmin = item.source === 'github'; 
       const userRoleBadge = item.source === 'github' ? getRoleBadge('dev') : `<span id="badge-${item.id}"></span>`;
       if(item.uid) { get(ref(db, `profiles/${item.uid}`)).then(s=>{ if(s.exists()){ const el=document.getElementById(`badge-${item.id}`); if(el) el.innerHTML = getRoleBadge(s.val().role); } }); }
 
@@ -580,7 +621,7 @@ function renderItemsToUI() {
       }
 
       htmlBuf += `
-      <div class="${cardClass}" style="margin-bottom:15px;" onclick="window.openDetail('${item.id}')">
+      <div class="${cardClass}" style="margin-bottom:15px; cursor:pointer;" onclick="window.openDetail('${item.id}')">
         <div class="card-img-wrapper"><img src="${item.url_img}" class="card-img" onerror="this.src='https://via.placeholder.com/300'"></div>
         <div class="card-body">
           <h3 class="font-bold" style="font-size:16px; margin-bottom:4px;">${item.title}</h3>
@@ -676,17 +717,21 @@ function loadPendingItems() {
 }
 
 window.approveItem = async (id, uid, title) => {
-  const snap = await get(ref(db, `items_pending/${id}`));
-  if(snap.exists()){ await set(ref(db, `items_public/${id}`), snap.val()); await remove(ref(db, `items_pending/${id}`)); await push(ref(db, `notifications/${uid}`), { type: 'accepted', title: title, time: serverTimestamp(), read: false }); window.showModalAlert("Disetujui!"); }
+  try {
+      const snap = await get(ref(db, `items_pending/${id}`));
+      if(snap.exists()){ await set(ref(db, `items_public/${id}`), snap.val()); await remove(ref(db, `items_pending/${id}`)); await push(ref(db, `notifications/${uid}`), { type: 'accepted', title: title, time: serverTimestamp(), read: false }); window.showModalAlert("Disetujui!"); }
+  } catch(e) { window.showModalAlert("Gagal memproses approval."); }
 };
 window.promptReject = (id, uid, title) => { currentRejectItem = { id, uid, title }; document.getElementById('reject-reason').value = ''; window.openDialog('dialog-reject-admin'); };
 window.submitReject = async () => {
   if (!currentRejectItem) return;
-  await remove(ref(db, `items_pending/${currentRejectItem.id}`));
-  await push(ref(db, `notifications/${currentRejectItem.uid}`), { type: 'rejected', title: currentRejectItem.title, reason: document.getElementById('reject-reason').value.trim() || '-', time: serverTimestamp(), read: false });
-  window.closeDialog('dialog-reject-admin'); window.showModalAlert("Ditolak."); currentRejectItem = null;
+  try {
+      await remove(ref(db, `items_pending/${currentRejectItem.id}`));
+      await push(ref(db, `notifications/${currentRejectItem.uid}`), { type: 'rejected', title: currentRejectItem.title, reason: document.getElementById('reject-reason').value.trim() || '-', time: serverTimestamp(), read: false });
+      window.closeDialog('dialog-reject-admin'); window.showModalAlert("Ditolak."); currentRejectItem = null;
+  } catch(e) { window.showModalAlert("Gagal menolak."); }
 };
-window.deletePublicItem = (id, title) => { window.showModalConfirm(`Hapus permanen: "${title}"?`, async () => { await remove(ref(db, `items_public/${id}`)); }); };
+window.deletePublicItem = (id, title) => { window.showModalConfirm(`Hapus permanen: "${title}"?`, async () => { try { await remove(ref(db, `items_public/${id}`)); } catch(e){ window.showModalAlert("Gagal."); } }); };
 
 // ================= KOMENTAR & BALASAN =================
 window.updateCommentCounter = (inputId, counterId) => { document.getElementById(counterId).innerText = `${document.getElementById(inputId).value.length}/200`; };
@@ -707,16 +752,16 @@ function loadComments(itemId) {
 
         for (const comment of mainComments) {
             let avatarUrl = generateDefaultAvatar(comment.username); let roleBadge = getRoleBadge('member');
-            if(globalProfilesCache[comment.uid]) { avatarUrl=globalProfilesCache[comment.uid].avatar; roleBadge=getRoleBadge(globalProfilesCache[comment.uid].role); }
-            else { const pSnap = await get(ref(db, `profiles/${comment.uid}`)); if(pSnap.exists()){ globalProfilesCache[comment.uid]=pSnap.val(); avatarUrl=pSnap.val().avatar; roleBadge=getRoleBadge(pSnap.val().role); }}
+            if(globalProfilesCache[comment.uid]) { avatarUrl=globalProfilesCache[comment.uid].avatar || avatarUrl; roleBadge=getRoleBadge(globalProfilesCache[comment.uid].role); }
+            else { try { const pSnap = await get(ref(db, `profiles/${comment.uid}`)); if(pSnap.exists()){ globalProfilesCache[comment.uid]=pSnap.val(); avatarUrl=pSnap.val().avatar||avatarUrl; roleBadge=getRoleBadge(pSnap.val().role); } } catch(e){} }
             
             const commentReplies = replies.filter(r => r.parentId === comment.id).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
             let repliesHTML = '';
             if (commentReplies.length > 0) {
                 const replyItemsHTML = await Promise.all(commentReplies.map(async (reply) => {
                     let rAvatar = generateDefaultAvatar(reply.username); let rBadge = getRoleBadge('member');
-                    if(globalProfilesCache[reply.uid]) { rAvatar=globalProfilesCache[reply.uid].avatar; rBadge=getRoleBadge(globalProfilesCache[reply.uid].role); }
-                    else { const pSnap = await get(ref(db, `profiles/${reply.uid}`)); if(pSnap.exists()){ globalProfilesCache[reply.uid]=pSnap.val(); rAvatar=pSnap.val().avatar; rBadge=getRoleBadge(pSnap.val().role); }}
+                    if(globalProfilesCache[reply.uid]) { rAvatar=globalProfilesCache[reply.uid].avatar || rAvatar; rBadge=getRoleBadge(globalProfilesCache[reply.uid].role); }
+                    else { try { const pSnap = await get(ref(db, `profiles/${reply.uid}`)); if(pSnap.exists()){ globalProfilesCache[reply.uid]=pSnap.val(); rAvatar=pSnap.val().avatar||rAvatar; rBadge=getRoleBadge(pSnap.val().role); } } catch(e){} }
                     const isReplyOwner = currentUser && (currentUser.uid === reply.uid || isAdmin);
                     return `
                     <div class="reply-item">
@@ -784,13 +829,27 @@ window.showReplyBox = (mainId, user) => { if(!currentUser) { window.closeDetailA
 window.postComment = async () => {
     if(!currentUser) return; const tEl = document.getElementById('new-comment-text'); const txt = tEl.value.trim(); if(!txt) return;
     const now = Date.now(); if(now - lastCommentTime < 30000) { window.showModalAlert(`Tunggu ${Math.ceil((30000 - (now - lastCommentTime)) / 1000)} detik.`); return; }
-    try { const refC = push(ref(db, `comments/${currentDetailItemId}`)); await update(ref(db), { [`comments/${currentDetailItemId}/${refC.key}`]: { uid: currentUser.uid, username: currentUsername, text: txt, createdAt: serverTimestamp(), parentId: null } }); lastCommentTime = now; tEl.value = ''; window.updateCommentCounter('new-comment-text', 'new-comment-counter'); } catch(e) { window.showModalAlert("Error: "+e.message); }
+    try { 
+        const refC = push(ref(db, `comments/${currentDetailItemId}`)); 
+        const updates = {};
+        updates[`comments/${currentDetailItemId}/${refC.key}`] = { uid: currentUser.uid, username: currentUsername, text: txt, createdAt: serverTimestamp(), parentId: null };
+        updates[`users/${currentUser.uid}/lastCommentAt`] = serverTimestamp();
+        await update(ref(db), updates); 
+        lastCommentTime = now; tEl.value = ''; window.updateCommentCounter('new-comment-text', 'new-comment-counter'); 
+    } catch(e) { window.showModalAlert("Error: "+e.message); }
 }
 
 window.postReply = async (itemId, mainId) => {
     if(!currentUser) return; const tEl = document.getElementById(`reply-text-${mainId}`); const txt = tEl.value.trim(); const tgt = document.getElementById(`reply-target-${mainId}`).innerText; if(!txt) return;
     const now = Date.now(); if(now - lastCommentTime < 30000) { window.showModalAlert(`Tunggu ${Math.ceil((30000 - (now - lastCommentTime)) / 1000)} detik.`); return; }
-    try { const refR = push(ref(db, `comments/${itemId}`)); await update(ref(db), { [`comments/${itemId}/${refR.key}`]: { uid: currentUser.uid, username: currentUsername, text: txt, createdAt: serverTimestamp(), parentId: mainId, replyToUsername: tgt } }); lastCommentTime = now; tEl.value = ''; document.getElementById(`reply-box-${mainId}`).classList.add('hidden'); } catch(e) { window.showModalAlert("Error: "+e.message); }
+    try { 
+        const refR = push(ref(db, `comments/${itemId}`)); 
+        const updates = {};
+        updates[`comments/${itemId}/${refR.key}`] = { uid: currentUser.uid, username: currentUsername, text: txt, createdAt: serverTimestamp(), parentId: mainId, replyToUsername: tgt };
+        updates[`users/${currentUser.uid}/lastCommentAt`] = serverTimestamp();
+        await update(ref(db), updates); 
+        lastCommentTime = now; tEl.value = ''; document.getElementById(`reply-box-${mainId}`).classList.add('hidden'); 
+    } catch(e) { window.showModalAlert("Error: "+e.message); }
 }
 
 window.deleteComment = async (itemId, commentId) => {
