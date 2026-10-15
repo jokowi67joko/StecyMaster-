@@ -336,21 +336,52 @@ function fetchServerStatus(id, target) {
   const el = document.getElementById(`status-${id}`);
   if (!el) return;
 
-  // Endpoint Bedrock v2 (lebih kompatibel dengan PocketMine-MP lawas MCPE 0.14.x)
-  fetch(`https://api.mcsrvstat.us/bedrock/2/${target}`)
+  // Pisahkan Host dan Port (default port PMMP adalah 19132)
+  const [host, portRaw] = target.split(':');
+  const port = portRaw || '19132';
+
+  // Memanggil API Vercel Serverless internal milik StecyMaster
+  fetch(`/api/server?host=${host}&port=${port}`)
     .then(res => res.json())
     .then(data => {
-      if(data.online) { 
-         el.innerHTML = `<span class="status-indicator status-online"></span> <span class="text-success" style="margin-right:5px;">Online</span> <span style="color:var(--text-muted);">|</span> <b style="margin-left:5px;">${data.players.online}/${data.players.max}</b> <span style="color:var(--text-muted); font-weight:normal; margin-left:4px;">Players</span>`; 
-      } else { 
-         // Membedakan Offline murni dengan protokol yang tidak dikenali
-         el.innerHTML = `<span class="status-indicator" style="background:#555;"></span> <span style="color:#aaa; margin-right:5px; font-weight:bold;">Tidak Terdeteksi</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Mungkin aktif, protokol terlalu lawas)</span>`; 
+      if (data.online) {
+         // Server benar-benar ONLINE
+         el.innerHTML = `
+           <span class="status-indicator status-online"></span> 
+           <span class="text-success" style="margin-right:5px; font-weight:bold;">Online</span> 
+           <span style="color:var(--text-muted);">|</span> 
+           <b style="margin-left:5px; color:var(--text-main);">${data.players.online}/${data.players.max}</b> 
+           <span style="color:var(--text-muted); font-weight:normal; margin-left:4px;">Players</span>`; 
+      } else {
+         // Membedakan antara server offline dengan koneksi timeout/jaringan
+         if (data.error === 'Timeout') {
+            el.innerHTML = `<span class="status-indicator" style="background:#555;"></span> <span style="color:#aaa; margin-right:5px; font-weight:bold;">Tidak Merespons</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Timeout / Sedang RTO)</span>`;
+         } else {
+            el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px; font-weight:bold;">Offline</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Server Mati)</span>`;
+         }
       }
     })
     .catch(() => {
-      el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px;">Error API</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Gagal koneksi ke API)</span>`;
+      // Jika API Vercel StecyMaster sendiri yang down/error
+      el.innerHTML = `<span class="status-indicator status-offline"></span> <span class="text-danger" style="margin-right:5px; font-weight:bold;">Error</span> <span style="color:#777; font-weight:normal; font-size:11px;">(Gagal memanggil API Internal)</span>`;
     });
 }
+
+// Auto-Refresh Status Server setiap 30 detik (Interval aman tanpa spam)
+setInterval(() => {
+  if (!document.getElementById('screen-home').classList.contains('hidden')) {
+      if (currentCategoryFilter === 'Semua' || currentCategoryFilter === 'Server') {
+          const serverElements = document.querySelectorAll('.server-status');
+          serverElements.forEach(el => {
+              const target = el.getAttribute('data-target');
+              const id = el.id.replace('status-', '');
+              // Fetch ulang untuk update UI, data akan pakai cache 15 detik jika terlalu cepat
+              if (target) fetchServerStatus(id, target);
+          });
+      }
+  }
+}, 30000);
+
 
 // Auto-Refresh Status Server setiap 60 detik
 setInterval(() => {
