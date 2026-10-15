@@ -4,11 +4,208 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>StecyMaster Forum</title>
-  <link rel="stylesheet" href="style.css">
   <style>
+    /* ================= VARIABEL WARNA & TEMA (KONTRAST DIPERBAIKI) ================= */
+    :root {
+      --bg-dark: #161616;
+      --bg-surface: #222222;
+      --bg-elevated: #2c2c2c;
+      --primary: #ff8c00; --primary-hover: #e07b00;
+      --text-main: #ffffff; --text-muted: #aaaaaa;
+      --border-color: #3a3a3a; --danger: #f44336; --success: #4caf50; --info: #2196f3;
+      --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: var(--font-family); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; outline: none; }
+    input, textarea, select { font-family: inherit; outline: none; }
+
+    /* ================= ANTI-HIGHLIGHT & ANTI-SELEKSI ================= */
+    button, a, .chip, .card, .nav-item, .drawer-menu li, .avatar-container, .header-btn, .icon-btn, header, .logo, .card-meta {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    }
+    input, textarea, p, h2, h3, h4, .text-selectable, .comment-text, .card-desc {
+      user-select: text; -webkit-user-select: text;
+    }
+
+    /* Proteksi Gambar: Mencegah tekan lama dan drag */
+    img, .card-img, .profile-img, .banner-img {
+      -webkit-user-drag: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none; /* Mencegah interaksi langsung pada gambar */
+    }
+    
+    /* Wrapper untuk elemen gambar yang perlu bisa di-klik */
+    .img-click-wrapper {
+        display: block;
+        position: relative;
+        cursor: pointer;
+        /* Kembalikan pointer-events ke wrapper, tapi tetap matikan di img di dalamnya */
+    }
+    .img-click-wrapper img {
+        pointer-events: none;
+    }
+
+
+    /* ================= UTILITY ================= */
+    .flex { display: flex; } .items-center { align-items: center; } .justify-between { justify-content: space-between; }
+    .hidden { display: none !important; }
+    .text-primary { color: var(--primary); } .text-danger { color: var(--danger); } .text-success { color: var(--success); }
+    .font-bold { font-weight: bold; } .text-center { text-align: center; }
+    .icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-sm { width: 18px; height: 18px; }
+
+    /* Layout App */
+    .app-container { max-width: 800px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-dark); position: relative; }
+
+    /* Ikon Tombol Lingkaran */
+    .icon-btn { color: var(--text-main); background: var(--bg-elevated); padding: 8px; border-radius: 50%; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; transition: 0.2s; position: relative; }
+    .icon-btn:active { background: var(--border-color); }
+
+    /* Search Box */
+    .search-container { padding: 10px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); }
+    .search-box { display: flex; align-items: center; background: var(--bg-elevated); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .search-box input { flex: 1; background: transparent; border: none; color: white; font-size: 14px; margin-left: 10px; }
+
+    /* Buttons & Inputs */
+    .btn { padding: 12px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: opacity 0.2s; width: 100%;}
+    .btn:active { opacity: 0.8; }
+    .btn-primary { background-color: var(--primary); color: #000; }
+    .btn-secondary { background-color: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-danger { background-color: var(--danger); color: white; }
+    .btn-success { background-color: var(--success); color: white; }
+
+    .input-field { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+    .input-field:focus { border-color: var(--primary); }
+
+    /* Role Badges */
+    .badge-role { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 6px; vertical-align: middle; }
+    .badge-dev { background: var(--primary); color: #000; }
+    .badge-verified { background: var(--info); color: white; }
+
+    /* Custom Modal Alert/Confirm */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--bg-surface); border: 1px solid var(--primary); padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; transform: scale(0.9); transition: transform 0.3s; }
+    .modal-overlay.active .modal-box { transform: scale(1); }
+
+    /* Custom Bottom Sheet */
+    .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
+    .bottom-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: var(--bg-surface); border-radius: 20px 20px 0 0; padding: 20px; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; }
+    .bottom-sheet-overlay.active .bottom-sheet { bottom: 0; }
+    .sheet-option { padding: 16px; border-radius: 8px; color: var(--text-main); font-size: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; margin-bottom: 5px; }
+    .sheet-option:active { background: var(--bg-elevated); }
+    .sheet-option.selected { color: var(--primary); font-weight: bold; background: rgba(255, 140, 0, 0.1); }
+
+    /* Side Drawer & Notification Drawer */
+    .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .drawer-overlay.active { opacity: 1; pointer-events: all; }
+    .side-drawer { position: fixed; top: 0; width: 280px; max-width: 80%; height: 100vh; background: var(--bg-surface); border-right: 1px solid var(--border-color); z-index: 901; transition: 0.3s ease; padding: 20px; display: flex; flex-direction: column; overflow-y: auto;}
+    .drawer-left { left: -300px; border-right: 1px solid var(--border-color); }
+    .drawer-left.active { left: 0; }
+    .drawer-right { right: -300px; border-left: 1px solid var(--border-color); border-right: none; }
+    .drawer-right.active { right: 0; }
+    .drawer-menu li { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--text-muted); font-weight: bold; }
+
+    /* Profil */
+    .profile-header { background-color: var(--bg-surface); padding: 30px 20px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto 15px; cursor: pointer; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; background: var(--bg-elevated); }
+    /* img di avatar-container sudah di-cover oleh img umum pointer-events: none */
+    .avatar-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 5px 0; text-align: center; font-weight: bold; pointer-events: none;}
+
+    /* Kategori Chips */
+    .category-container { padding: 16px 20px; display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border-color); }
+    .category-container::-webkit-scrollbar { display: none; }
+    .chip { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-size: 13px; white-space: nowrap; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .chip svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
+    .chip.active { background: rgba(255, 140, 0, 0.15); border-color: var(--primary); color: var(--primary); font-weight: bold; }
+
+    /* Layout Cards */
+    .content-list { padding: 20px 20px 90px; display: flex; flex-direction: column; gap: 16px; }
+    .card-horizontal { background: var(--bg-surface); border-radius: 12px; display: flex; border: 1px solid var(--border-color); overflow: hidden; position: relative; align-items: stretch; }
+    .card-horizontal .card-img-wrapper { width: 140px; min-width: 140px; background: var(--bg-elevated); position: relative; cursor: pointer;}
+    .card-horizontal .card-img { width: 100%; height: 100%; object-fit: cover; object-position: center; position: absolute; top:0; left:0;}
+    .card-horizontal .card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    
+    .card-vertical { background: var(--bg-surface); border-radius: 12px; display: flex; flex-direction: column; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
+    .card-vertical .card-img-wrapper { width: 100%; height: 200px; background: var(--bg-elevated); position: relative; cursor: pointer;}
+    .card-vertical .card-img { width: 100%; height: 100%; object-fit: cover; object-position: center; position: absolute; top:0; left:0;}
+    .card-vertical .card-body { padding: 15px; }
+
+    .card-meta { font-size: 11px; color: var(--primary); background: rgba(255,140,0,0.1); padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; font-weight: bold; }
+    .card-desc { font-size: 13px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
+    .badge-github { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 4px 8px; border-radius: 6px; border: 1px solid #555; z-index: 10;}
+
+    /* Server Status API */
+    .server-status { font-size: 12px; background: var(--bg-elevated); padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 6px; }
+    .status-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-online { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-offline { background-color: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+    /* Bottom Nav */
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 800px; background: var(--bg-surface); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 12px 0 15px 0; z-index: 60; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); font-size: 11px; flex: 1; }
+    .nav-item.active { color: var(--primary); }
+
+    /* Loading Spinner */
+    .loader { border: 4px solid var(--bg-elevated); border-top: 4px solid var(--primary); border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; margin: 0 auto; }
+    .loader-inline { border: 2px solid transparent; border-top: 2px solid var(--primary); border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .splash-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
+
+    /* Notifikasi UI */
+    .notif-badge-icon { position: absolute; top: -2px; right: -2px; background: var(--danger); color: white; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 10px; border: 2px solid var(--bg-surface); }
+    .notif-card { background: var(--bg-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; font-size: 13px; cursor: pointer;}
+    .notif-card.unread { border-left: 4px solid var(--primary); }
+
+    /* Comments Section */
+    .comments-section { margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; }
+    .comment-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--bg-elevated); }
+    .comment-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+    .comment-author-info { display: flex; align-items: center; gap: 8px; }
+    .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-elevated); border: 1px solid var(--border-color); object-fit: cover;}
+    .comment-author { font-weight: bold; font-size: 13px; color: var(--text-main); }
+    .comment-date { font-size: 11px; color: var(--text-muted); }
+    .comment-text { font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
+    .comment-actions { display: flex; gap: 15px; align-items: center; }
+    .comment-action-btn { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; }
+    .comment-action-btn:hover { color: var(--primary); }
+    .comment-action-btn.danger:hover { color: var(--danger); }
+    .comment-input-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; background: var(--bg-elevated); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .comment-textarea { width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 8px; font-size: 13px; resize: vertical; min-height: 60px; }
+    .comment-textarea:focus { border-color: var(--primary); }
+    .char-counter { font-size: 11px; color: var(--text-muted); text-align: right; }
+    
+    /* Balasan (Replies) */
+    .reply-list { margin-left: 20px; margin-top: 10px; border-left: 2px solid var(--primary); padding-left: 15px; }
+    .reply-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--bg-elevated); }
+    .reply-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .reply-input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .reply-to-text { font-size: 11px; color: var(--primary); font-weight: bold; margin-bottom: 2px;}
+
     .form-label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; color: var(--text-muted); }
     .file-upload-box { background: var(--bg-elevated); border: 1px dashed var(--border-color); border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 15px; cursor: pointer; color: var(--primary); font-size: 13px; }
     .file-upload-box input { display: none; }
+
+    /* Modal Detail Item */
+    #detail-modal .modal-box { width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 0; display: flex; flex-direction: column;}
+    .detail-header-img-wrapper { width: 100%; height: 200px; position: relative; background: var(--bg-elevated); }
+    .detail-header-img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;}
+    .detail-content-area { padding: 20px; }
+    
+    /* Loading overlay profil */
+    .profile-loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index: 10; flex-direction: column; gap: 5px;}
+    .profile-loading-overlay .loader-inline { width: 20px; height: 20px; border-width: 3px; }
+    .profile-loading-text { font-size: 9px; font-weight: bold; color: white;}
   </style>
 </head>
 <body>
@@ -19,7 +216,7 @@
       <span class="text-primary">Stecy</span><span style="color: white;">Master</span>
     </div>
     <div class="loader"></div>
-    <p style="color: var(--text-muted); margin-top: 20px; font-size: 14px; font-weight: bold;">Memverifikasi sesi...</p>
+    <p style="color: var(--text-muted); margin-top: 20px; font-size: 14px; font-weight: bold;" data-i18n="verifying_session">Memverifikasi sesi...</p>
   </div>
 
   <!-- CUSTOM BOTTOM SHEET (Untuk Pilihan Kategori & Versi Server) -->
@@ -35,18 +232,84 @@
 
   <!-- CUSTOM MODAL UMUM -->
   <div id="custom-modal" class="modal-overlay">
+    <div class="modal-box" style="padding: 20px;">
+      <h3 id="modal-title" class="text-primary font-bold" style="margin-bottom: 10px; text-align: center;">Pesan</h3>
+      <p id="modal-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height: 1.4; text-align: center;"></p>
+      <div id="modal-actions" class="flex" style="gap:10px; justify-content: center;"></div>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL ITEM LENGKAP -->
+  <div id="detail-modal" class="modal-overlay">
     <div class="modal-box">
-      <h3 id="modal-title" class="text-primary font-bold" style="margin-bottom: 10px;">Pesan</h3>
-      <p id="modal-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height: 1.4;"></p>
-      <div id="modal-actions" class="flex" style="gap:10px;"></div>
+        <div class="detail-header-img-wrapper img-click-wrapper">
+             <button class="detail-close-btn" onclick="document.getElementById('detail-modal').classList.remove('active')">
+                 <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+             </button>
+             <img id="detail-img" src="" class="detail-header-img" alt="Preview">
+        </div>
+        <div class="detail-content-area">
+            <h2 id="detail-title" class="font-bold text-main" style="font-size: 20px; margin-bottom: 8px;">Judul</h2>
+            
+            <div style="font-size:12px; margin-bottom:10px; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+                 <img id="detail-uploader-avatar" src="" style="width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--bg-elevated);">
+                 <span>Oleh: <span id="detail-uploader-name" class="text-main font-bold">Name</span></span>
+                 <span id="detail-uploader-badge"></span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                 <span id="detail-category" class="card-meta">Kategori</span>
+                 <span id="detail-version" class="card-meta" style="background:var(--bg-elevated); color:var(--text-muted); border:1px solid var(--border-color);">Versi</span>
+            </div>
+
+            <div id="detail-server-status-container" class="hidden" style="margin-bottom:15px;">
+                <!-- Status Server diinjeksi sini -->
+            </div>
+
+            <h4 class="font-bold text-main" style="margin-bottom: 8px; font-size:14px;" data-i18n="description">Deskripsi</h4>
+            <div style="position: relative;">
+                <p id="detail-desc" class="text-selectable" style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; word-break: break-word;">Isi deskripsi...</p>
+                <button id="btn-translate-desc" class="comment-action-btn" style="position: absolute; top: -30px; right: 0; background:var(--bg-elevated); padding:4px 8px; border-radius:4px; border:1px solid var(--border-color);" onclick="window.translateDesc()">
+                    <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg> <span id="text-translate-desc" data-i18n="translate">Translate</span>
+                </button>
+            </div>
+
+            <div id="detail-action-container" style="margin-bottom: 25px;">
+                <!-- Tombol Download / Salin IP diinjeksi sini -->
+            </div>
+
+            <!-- Bagian Komentar -->
+            <div class="comments-section">
+                <h3 class="font-bold text-main" style="font-size: 16px; margin-bottom: 15px;" data-i18n="comments">Komentar</h3>
+                
+                <div id="comment-form-container">
+                    <div class="comment-input-area">
+                        <textarea id="new-comment-text" class="comment-textarea text-selectable" placeholder="Tulis komentar..." maxlength="200" oninput="window.updateCommentCounter('new-comment-text', 'new-comment-counter')"></textarea>
+                        <div class="flex justify-between items-center">
+                            <span id="new-comment-counter" class="char-counter">0/200</span>
+                            <button class="btn btn-primary" style="width: auto; padding: 8px 16px; font-size: 12px;" onclick="window.postComment()" data-i18n="post_comment">Kirim Komentar</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="comment-login-prompt" class="hidden" style="text-align:center; padding:15px; background:var(--bg-elevated); border-radius:8px; margin-bottom:20px; border:1px solid var(--border-color);">
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px;" data-i18n="login_to_comment">Silakan masuk untuk memberikan komentar.</p>
+                    <button class="btn btn-primary" style="width:auto; display:inline-block; padding:8px 20px; font-size:12px;" onclick="window.closeDetailAndLogin()" data-i18n="login_btn">Masuk / Daftar</button>
+                </div>
+
+                <div id="comments-list">
+                    <p style="text-align:center; color:var(--text-muted); font-size:13px;" data-i18n="loading_comments">Memuat komentar...</p>
+                </div>
+            </div>
+
+        </div>
     </div>
   </div>
 
   <!-- MODAL PENOLAKAN ADMIN -->
   <div id="reject-modal" class="modal-overlay">
-    <div class="modal-box">
-      <h3 class="text-danger font-bold" style="margin-bottom: 10px;">Tolak Item</h3>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Berikan alasan penolakan untuk dikirim ke notifikasi user.</p>
+    <div class="modal-box" style="padding: 20px;">
+      <h3 class="text-danger font-bold" style="margin-bottom: 10px; text-align: center;">Tolak Item</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px; text-align: center;">Berikan alasan penolakan untuk dikirim ke notifikasi user.</p>
       <textarea id="reject-reason" class="input-field text-selectable" rows="3" placeholder="Contoh: Link mati atau IP server tidak valid..."></textarea>
       <div class="flex" style="gap:10px;">
         <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('reject-modal').classList.remove('active')">Batal</button>
@@ -59,56 +322,67 @@
   <div id="drawer-overlay" class="drawer-overlay" onclick="window.closeAllDrawers()"></div>
   <div id="side-drawer" class="side-drawer drawer-left">
     <div style="text-align:center; padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:10px;">
-      <img id="sidebar-profile-img" src="https://via.placeholder.com/60" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
+      <div class="avatar-container" style="width:60px; height:60px; cursor:default; border:2px solid var(--primary);">
+          <img id="sidebar-profile-img" src="https://via.placeholder.com/60" alt="Avatar">
+      </div>
       <h3 id="sidebar-name" style="margin-top:10px; font-size:16px;">Username</h3>
       <div id="sidebar-role"></div>
     </div>
     <ul class="drawer-menu">
-      <li onclick="window.showModalAlert('Fitur ganti bahasa akan segera hadir!')">
+      <li onclick="window.switchLanguage()">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor" stroke="none"/></svg>
-        Translate (ID/EN)
+        <span data-i18n="translate_ui">Translate UI (ID/EN)</span>
+      </li>
+      <li onclick="window.toggleAutoTranslate()" id="menu-auto-translate">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12zm10 6c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6z"/></svg>
+        <span>Auto-Translate: <span id="auto-translate-status" class="text-danger">OFF</span></span>
       </li>
       <li onclick="window.open('https://wa.me/6283151363087', '_blank')">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 2.98.97 4.29L2 22l5.71-.97C9.02 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM12 16h-1v-4h1v4zm0-6h-1V8h1v2z" fill="currentColor" stroke="none"/></svg>
-        Layanan / Bantuan
+        <span data-i18n="support">Layanan / Bantuan</span>
       </li>
     </ul>
-    <div style="margin-top:auto;">
-      <button class="btn btn-secondary" onclick="window.customLogout()" style="width:100%; border-color:var(--danger); color:var(--danger);">Keluar Akun</button>
+    <div style="margin-top:auto;" id="sidebar-auth-section">
+      <button class="btn btn-secondary" onclick="window.customLogout()" style="width:100%; border-color:var(--danger); color:var(--danger);" data-i18n="logout">Keluar Akun</button>
     </div>
   </div>
 
   <!-- DRAWER KANAN (NOTIFIKASI) -->
   <div id="notif-drawer" class="side-drawer drawer-right">
     <div class="flex items-center justify-between" style="padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:15px;">
-      <h3 class="font-bold text-main">Notifikasi</h3>
+      <h3 class="font-bold text-main" data-i18n="notifications">Notifikasi</h3>
       <button onclick="window.closeAllDrawers()" style="color:var(--text-muted); padding:5px;"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div id="notif-container" style="flex:1;">
-      <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Belum ada notifikasi.</p>
+      <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;" data-i18n="no_notifications">Belum ada notifikasi.</p>
     </div>
   </div>
 
   <!-- LAYAR LOGIN / SIGN UP -->
   <div id="screen-login" class="app-container screen hidden">
-    <div style="margin: auto; padding: 30px; background: var(--bg-surface); border-radius: 12px; width: 90%; max-width: 400px; text-align: center; margin-top: 10vh; border: 1px solid var(--border-color);">
-      <h2 class="text-primary font-bold" id="auth-title-text" style="font-size: 24px; margin-bottom: 5px;">Masuk ke Akun</h2>
+    <!-- Tombol close/back to home jika masuk dari public view -->
+    <button class="header-btn" style="position:absolute; top:20px; left:20px; padding:10px; background:var(--bg-surface); border-radius:50%; border:1px solid var(--border-color);" onclick="window.switchScreen('screen-home')">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+
+    <div style="margin: auto; padding: 30px; background: var(--bg-surface); border-radius: 12px; width: 90%; max-width: 400px; text-align: center; margin-top: 15vh; border: 1px solid var(--border-color);">
+      <h2 class="text-primary font-bold" id="auth-title-text" style="font-size: 24px; margin-bottom: 5px;" data-i18n="login_title">Masuk ke Akun</h2>
       <p style="color:var(--text-muted); font-size:14px; margin-bottom: 25px;">
-        <span id="auth-subtitle-text">Belum punya akun?</span>
-        <span onclick="window.toggleAuthMode()" id="auth-switch-text" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;">Daftar di sini</span>
+        <span id="auth-subtitle-text" data-i18n="login_subtitle">Belum punya akun?</span>
+        <span onclick="window.toggleAuthMode()" id="auth-switch-text" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;" data-i18n="login_switch">Daftar di sini</span>
       </p>
       <input type="email" id="auth-email" placeholder="Alamat Email" class="input-field text-selectable">
       <input type="password" id="auth-password" placeholder="Password (Minimal 6 karakter)" class="input-field text-selectable">
-      <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()">Masuk</button>
+      <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()" data-i18n="login_btn">Masuk</button>
       <p id="login-error" class="text-danger" style="margin-top: 10px; font-size: 13px;"></p>
       <div class="flex items-center" style="margin: 20px 0; gap: 10px;">
         <hr style="flex:1; border-color:var(--border-color);">
-        <span style="color:var(--text-muted); font-size:12px;">atau via</span>
+        <span style="color:var(--text-muted); font-size:12px;" data-i18n="or_via">atau via</span>
         <hr style="flex:1; border-color:var(--border-color);">
       </div>
       <button class="btn btn-secondary" onclick="window.loginGoogle()">
         <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Masuk dengan Google
+        <span data-i18n="login_google">Masuk dengan Google</span>
       </button>
     </div>
   </div>
@@ -116,34 +390,35 @@
   <!-- LAYAR BUAT USERNAME -->
   <div id="screen-username" class="app-container screen hidden" style="justify-content: center; padding: 20px;">
     <div style="background: var(--bg-surface); padding: 30px; border-radius: 12px; text-align: center; border: 1px solid var(--border-color);">
-      <h2 class="text-primary font-bold" style="margin-bottom: 10px;">Buat Username</h2>
-      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
+      <h2 class="text-primary font-bold" style="margin-bottom: 10px;" data-i18n="create_username_title">Buat Username</h2>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;" data-i18n="create_username_desc">Hanya huruf, angka, dan underscore (3-16 karakter).</p>
       <input type="text" id="input-username" placeholder="Cth: Steve_01" class="input-field text-selectable">
-      <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()">Simpan Username</button>
+      <button class="btn btn-primary" id="btn-save-username" onclick="window.saveUsername()" data-i18n="save_username">Simpan Username</button>
       <p id="username-error" class="text-danger" style="margin-top: 10px; font-size: 14px;"></p>
     </div>
   </div>
 
   <!-- LAYAR USER (HOME) -->
   <div id="screen-home" class="app-container screen hidden">
-    <!-- Header -->
+    <!-- Header Terpusat -->
     <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50;">
       <div style="flex: 1; display: flex; justify-content: flex-start;">
         <button class="icon-btn" onclick="window.toggleDrawer('side-drawer')">
           <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
       </div>
-      <div class="logo font-bold" style="flex: 2; text-align: center;">
+      <div class="logo font-bold" style="flex: 2; text-align: center; cursor: pointer;" onclick="window.scrollTo(0,0)">
         <span class="text-primary">Stecy</span><span style="color: white;">Master</span>
       </div>
       <div style="flex: 1; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
-        <button class="icon-btn" onclick="window.toggleDrawer('notif-drawer')">
+        <button id="btn-notif-header" class="icon-btn hidden" onclick="window.toggleDrawer('notif-drawer')">
           <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           <span id="notif-badge" class="notif-badge-icon hidden">0</span>
         </button>
+        <button id="btn-login-header" class="btn btn-primary hidden" style="padding: 6px 12px; font-size:12px; width:auto;" onclick="window.switchScreen('screen-login')" data-i18n="login_btn">Masuk</button>
         <button id="btn-open-admin" class="hidden" onclick="window.switchScreen('screen-admin')" style="padding: 0;">
            <span style="background: var(--danger); color: white; font-size:10px; padding:6px 10px; border-radius:12px; font-weight:bold; display: flex; align-items: center; gap: 4px;">
-             <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin
+             <svg class="icon icon-sm" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span data-i18n="admin_panel">Admin</span>
            </span>
         </button>
       </div>
@@ -153,14 +428,14 @@
     <div class="search-container">
       <div class="search-box">
         <svg class="icon icon-sm" style="color:var(--text-muted);" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="search-input" class="text-selectable" placeholder="Cari item, mod, atau server..." oninput="window.handleSearch(this.value)">
+        <input type="text" id="search-input" class="text-selectable" placeholder="Cari item, mod, atau server..." data-i18n-placeholder="search_placeholder" oninput="window.handleSearch(this.value)">
       </div>
     </div>
 
     <!-- Kategori Horizontal -->
     <div class="category-container">
       <button class="chip active" onclick="window.setCategoryFilter('Semua', this)">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Semua
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> <span data-i18n="cat_all">Semua</span>
       </button>
       <button class="chip" onclick="window.setCategoryFilter('Mod', this)">
         <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Mod
@@ -187,19 +462,19 @@
 
     <!-- List Item Publik -->
     <div id="public-items-container" class="content-list">
-      <p style="text-align:center; color: var(--text-muted);">Memuat konten...</p>
+      <div class="loader" style="margin-top: 40px;"></div>
     </div>
 
     <!-- Bottom Nav -->
     <nav class="bottom-nav">
       <button class="nav-item active" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span>Beranda</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span data-i18n="nav_home">Beranda</span>
       </button>
-      <button class="nav-item" onclick="window.switchScreen('screen-add')">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>Upload</span>
+      <button class="nav-item" onclick="window.requireLoginAndSwitch('screen-add')">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span data-i18n="nav_upload">Upload</span>
       </button>
-      <button class="nav-item" onclick="window.switchScreen('screen-profile')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span>Profil</span>
+      <button class="nav-item" onclick="window.requireLoginAndSwitch('screen-profile')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span data-i18n="nav_profile">Profil</span>
       </button>
     </nav>
   </div>
@@ -207,30 +482,34 @@
   <!-- LAYAR PROFIL -->
   <div id="screen-profile" class="app-container screen hidden">
     <header class="flex items-center" style="gap: 15px; padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
-      <div class="logo font-bold">Profil Saya</div>
+      <div class="logo font-bold" data-i18n="my_profile">Profil Saya</div>
     </header>
     <div class="profile-header">
-      <input type="file" id="profile-upload" accept="image/*" class="hidden" onchange="window.handleProfileUpload(event)">
-      <div class="avatar-container" onclick="document.getElementById('profile-upload').click()">
-        <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar">
-        <div class="avatar-overlay">UBAH FOTO</div>
+      <input type="file" id="profile-upload" accept="image/jpeg, image/png, image/webp" class="hidden" onchange="window.handleProfileUpload(event)">
+      <div class="avatar-container img-click-wrapper" onclick="document.getElementById('profile-upload').click()">
+        <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar" class="profile-img">
+        <div class="avatar-overlay" data-i18n="change_photo">UBAH FOTO</div>
+        <div id="profile-upload-loading" class="profile-loading-overlay hidden">
+            <div class="loader-inline"></div>
+            <span class="profile-loading-text">Loading</span>
+        </div>
       </div>
       <div class="flex items-center justify-center" style="margin-bottom: 5px;">
         <h2 id="profile-name" class="font-bold text-main">Player Name</h2>
         <div id="profile-role-badge"></div>
       </div>
-      <button class="btn btn-secondary" style="margin: 25px auto 0; width: 160px; border-color: var(--danger); color: var(--danger);" onclick="window.customLogout()">Keluar Akun</button>
+      <button class="btn btn-secondary" style="margin: 25px auto 0; width: 160px; border-color: var(--danger); color: var(--danger);" onclick="window.customLogout()" data-i18n="logout">Keluar Akun</button>
     </div>
     
     <nav class="bottom-nav">
       <button class="nav-item" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span>Beranda</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span data-i18n="nav_home">Beranda</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-add')">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>Upload</span>
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span data-i18n="nav_upload">Upload</span>
       </button>
       <button class="nav-item active">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span>Profil</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span data-i18n="nav_profile">Profil</span>
       </button>
     </nav>
   </div>
@@ -238,15 +517,15 @@
   <!-- LAYAR TAMBAH ITEM (Form Dinamis) -->
   <div id="screen-add" class="app-container screen hidden">
     <header class="flex items-center justify-between" style="padding: 16px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
-      <button class="header-btn" style="padding:5px;" onclick="window.switchScreen('screen-home')">Batal</button>
-      <div class="logo font-bold">Kirim Baru</div>
+      <button class="header-btn" style="padding:5px;" onclick="window.switchScreen('screen-home')" data-i18n="cancel">Batal</button>
+      <div class="logo font-bold" data-i18n="submit_new_item">Kirim Baru</div>
       <div style="width:40px;"></div>
     </header>
     
     <div style="padding: 20px; padding-bottom:100px;">
       
       <!-- Pemilihan Kategori Menggunakan Bottom Sheet -->
-      <label class="form-label">Kategori*</label>
+      <label class="form-label" data-i18n="category_label">Kategori*</label>
       <div class="input-field flex items-center justify-between" onclick="window.openCategorySheet()" style="cursor:pointer; margin-bottom:20px;">
         <span id="selected-category-text" style="font-weight:bold; color:var(--primary);">Mod</span>
         <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -254,29 +533,29 @@
 
       <!-- FORM STANDAR (Selain Server) -->
       <div id="form-standard-container">
-        <label class="form-label">Judul Item*</label>
+        <label class="form-label" data-i18n="title_label">Judul Item*</label>
         <input type="text" id="add-title" placeholder="Contoh: Mod Senjata 3D" class="input-field text-selectable">
-        <label class="form-label">Versi MCPE*</label>
+        <label class="form-label" data-i18n="version_label">Versi MCPE*</label>
         <input type="text" id="add-version" placeholder="Contoh: 0.15.10" class="input-field text-selectable">
       </div>
 
       <!-- FORM KHUSUS SERVER -->
       <div id="form-server-container" class="hidden">
-        <label class="form-label">Nama Server*</label>
+        <label class="form-label" data-i18n="server_name_label">Nama Server*</label>
         <input type="text" id="add-server-name" placeholder="Contoh: Stecy SMP" class="input-field text-selectable">
         
         <div class="flex" style="gap:10px;">
           <div style="flex:2;">
-            <label class="form-label">IP Server*</label>
+            <label class="form-label" data-i18n="server_ip_label">IP Server*</label>
             <input type="text" id="add-server-ip" placeholder="play.contoh.com" class="input-field text-selectable">
           </div>
           <div style="flex:1;">
-            <label class="form-label">Port*</label>
+            <label class="form-label" data-i18n="server_port_label">Port*</label>
             <input type="number" id="add-server-port" placeholder="19132" class="input-field text-selectable" value="19132">
           </div>
         </div>
 
-        <label class="form-label">Versi yang Didukung*</label>
+        <label class="form-label" data-i18n="supported_version_label">Versi yang Didukung*</label>
         <div class="input-field flex items-center justify-between" onclick="window.openVersionSheet()" style="cursor:pointer; margin-bottom:15px;">
           <span id="selected-version-text">0.15.10</span>
           <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -284,43 +563,43 @@
       </div>
 
       <!-- SHARED FIELDS -->
-      <label class="form-label">Deskripsi*</label>
+      <label class="form-label" data-i18n="desc_label">Deskripsi*</label>
       <textarea id="add-desc" placeholder="Tuliskan kegunaan item atau server ini..." rows="3" class="input-field text-selectable"></textarea>
       
-      <!-- Upload Gambar (Dibutuhkan semua kategori termasuk server untuk thumbnail banner) -->
-      <label class="form-label">Gambar Preview* (Max 5MB)</label>
+      <!-- Upload Gambar -->
+      <label class="form-label"><span data-i18n="img_preview_label">Gambar Preview*</span> (Max 5MB)</label>
       <div class="flex" style="gap:10px;">
         <input type="url" id="add-img" placeholder="URL Gambar" class="input-field text-selectable" style="margin-bottom:0;">
         <label class="file-upload-box" style="margin-bottom:0; width:120px; flex:none;">
-          Pilih File <input type="file" id="file-img" accept="image/*" onchange="window.handleLocalImage(event)">
+          <span data-i18n="choose_file">Pilih File</span> <input type="file" id="file-img" accept="image/*" onchange="window.handleLocalImage(event)">
         </label>
       </div>
       <p id="img-status" style="font-size:11px; color:var(--success); margin-bottom:15px; margin-top:5px;"></p>
 
       <!-- Upload File Download (Hanya muncul jika BUKAN kategori Server) -->
       <div id="form-file-container">
-        <label class="form-label">File Download / Mod* (Max 5MB)</label>
+        <label class="form-label"><span data-i18n="file_download_label">File Download / Mod*</span> (Max 5MB)</label>
         <div class="flex" style="gap:10px;">
           <input type="url" id="add-file" placeholder="URL File Download" class="input-field text-selectable" style="margin-bottom:0;">
           <label class="file-upload-box" style="margin-bottom:0; width:120px; flex:none;">
-            Pilih File <input type="file" id="file-doc" onchange="window.handleLocalFile(event)">
+            <span data-i18n="choose_file">Pilih File</span> <input type="file" id="file-doc" onchange="window.handleLocalFile(event)">
           </label>
         </div>
         <p id="file-status" style="font-size:11px; color:var(--success); margin-bottom:25px; margin-top:5px;"></p>
       </div>
 
-      <button id="btn-submit-item" class="btn btn-primary" onclick="window.submitItem()">Upload Sekarang</button>
+      <button id="btn-submit-item" class="btn btn-primary" onclick="window.submitItem()" data-i18n="upload_now">Upload Sekarang</button>
     </div>
     
     <nav class="bottom-nav">
       <button class="nav-item" onclick="window.switchScreen('screen-home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span>Beranda</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span data-i18n="nav_home">Beranda</span>
       </button>
       <button class="nav-item active">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>Upload</span>
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span data-i18n="nav_upload">Upload</span>
       </button>
       <button class="nav-item" onclick="window.switchScreen('screen-profile')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span>Profil</span>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span data-i18n="nav_profile">Profil</span>
       </button>
     </nav>
   </div>
@@ -331,18 +610,20 @@
       <button class="header-btn" style="padding:5px;" onclick="window.switchScreen('screen-home')">
         <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       </button>
-      <div class="logo font-bold">Panel Admin</div>
+      <div class="logo font-bold" data-i18n="admin_panel">Panel Admin</div>
       <div style="width:24px;"></div>
     </header>
     
     <div style="background:var(--bg-surface); padding:15px; text-align:center; border-bottom:2px solid var(--primary); color:var(--primary); font-weight:bold;">
-      Antrean (<span id="pending-count">0</span>)
+      <span data-i18n="queue">Antrean</span> (<span id="pending-count">0</span>)
     </div>
     <div id="pending-items-container" class="content-list" style="padding-top: 20px;">
-      <p style="text-align:center; color: var(--text-muted);">Tidak ada antrean.</p>
+      <p style="text-align:center; color: var(--text-muted);" data-i18n="no_queue">Tidak ada antrean.</p>
     </div>
   </div>
 
+  <!-- Modul utama aplikasi -->
   <script type="module" src="app.js"></script>
+
 </body>
 </html>
