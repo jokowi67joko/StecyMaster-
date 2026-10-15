@@ -4,211 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>StecyMaster Forum</title>
-  <style>
-    /* ================= VARIABEL WARNA & TEMA (KONTRAST DIPERBAIKI) ================= */
-    :root {
-      --bg-dark: #161616;
-      --bg-surface: #222222;
-      --bg-elevated: #2c2c2c;
-      --primary: #ff8c00; --primary-hover: #e07b00;
-      --text-main: #ffffff; --text-muted: #aaaaaa;
-      --border-color: #3a3a3a; --danger: #f44336; --success: #4caf50; --info: #2196f3;
-      --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body { background-color: var(--bg-dark); color: var(--text-main); font-family: var(--font-family); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-    a { text-decoration: none; color: inherit; }
-    ul { list-style: none; }
-    button { cursor: pointer; border: none; background: none; font-family: inherit; outline: none; }
-    input, textarea, select { font-family: inherit; outline: none; }
-
-    /* ================= ANTI-HIGHLIGHT & ANTI-SELEKSI ================= */
-    button, a, .chip, .card, .nav-item, .drawer-menu li, .avatar-container, .header-btn, .icon-btn, header, .logo, .card-meta {
-      -webkit-tap-highlight-color: transparent;
-      user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-    }
-    input, textarea, p, h2, h3, h4, .text-selectable, .comment-text, .card-desc {
-      user-select: text; -webkit-user-select: text;
-    }
-
-    /* Proteksi Gambar: Mencegah tekan lama dan drag */
-    img, .card-img, .profile-img, .banner-img {
-      -webkit-user-drag: none;
-      -webkit-touch-callout: none;
-      user-select: none;
-      -webkit-user-select: none;
-      pointer-events: none; /* Mencegah interaksi langsung pada gambar */
-    }
-    
-    /* Wrapper untuk elemen gambar yang perlu bisa di-klik */
-    .img-click-wrapper {
-        display: block;
-        position: relative;
-        cursor: pointer;
-        /* Kembalikan pointer-events ke wrapper, tapi tetap matikan di img di dalamnya */
-    }
-    .img-click-wrapper img {
-        pointer-events: none;
-    }
-
-
-    /* ================= UTILITY ================= */
-    .flex { display: flex; } .items-center { align-items: center; } .justify-between { justify-content: space-between; }
-    .hidden { display: none !important; }
-    .text-primary { color: var(--primary); } .text-danger { color: var(--danger); } .text-success { color: var(--success); }
-    .font-bold { font-weight: bold; } .text-center { text-align: center; }
-    .icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .icon-sm { width: 18px; height: 18px; }
-
-    /* Layout App */
-    .app-container { max-width: 800px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-dark); position: relative; }
-
-    /* Ikon Tombol Lingkaran */
-    .icon-btn { color: var(--text-main); background: var(--bg-elevated); padding: 8px; border-radius: 50%; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; transition: 0.2s; position: relative; }
-    .icon-btn:active { background: var(--border-color); }
-
-    /* Search Box */
-    .search-container { padding: 10px 20px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); }
-    .search-box { display: flex; align-items: center; background: var(--bg-elevated); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .search-box input { flex: 1; background: transparent; border: none; color: white; font-size: 14px; margin-left: 10px; }
-
-    /* Buttons & Inputs */
-    .btn { padding: 12px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: opacity 0.2s; width: 100%;}
-    .btn:active { opacity: 0.8; }
-    .btn-primary { background-color: var(--primary); color: #000; }
-    .btn-secondary { background-color: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border-color); }
-    .btn-danger { background-color: var(--danger); color: white; }
-    .btn-success { background-color: var(--success); color: white; }
-
-    .input-field { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
-    .input-field:focus { border-color: var(--primary); }
-
-    /* Role Badges */
-    .badge-role { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 6px; vertical-align: middle; }
-    .badge-dev { background: var(--primary); color: #000; }
-    .badge-verified { background: var(--info); color: white; }
-
-    /* Custom Modal Alert/Confirm */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-    .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .modal-box { background: var(--bg-surface); border: 1px solid var(--primary); padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; transform: scale(0.9); transition: transform 0.3s; }
-    .modal-overlay.active .modal-box { transform: scale(1); }
-
-    /* Custom Bottom Sheet */
-    .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-    .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
-    .bottom-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: var(--bg-surface); border-radius: 20px 20px 0 0; padding: 20px; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto; }
-    .bottom-sheet-overlay.active .bottom-sheet { bottom: 0; }
-    .sheet-option { padding: 16px; border-radius: 8px; color: var(--text-main); font-size: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; margin-bottom: 5px; }
-    .sheet-option:active { background: var(--bg-elevated); }
-    .sheet-option.selected { color: var(--primary); font-weight: bold; background: rgba(255, 140, 0, 0.1); }
-
-    /* Side Drawer & Notification Drawer */
-    .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-    .drawer-overlay.active { opacity: 1; pointer-events: all; }
-    .side-drawer { position: fixed; top: 0; width: 280px; max-width: 80%; height: 100vh; background: var(--bg-surface); border-right: 1px solid var(--border-color); z-index: 901; transition: 0.3s ease; padding: 20px; display: flex; flex-direction: column; overflow-y: auto;}
-    .drawer-left { left: -300px; border-right: 1px solid var(--border-color); }
-    .drawer-left.active { left: 0; }
-    .drawer-right { right: -300px; border-left: 1px solid var(--border-color); border-right: none; }
-    .drawer-right.active { right: 0; }
-    .drawer-menu li { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--text-muted); font-weight: bold; }
-
-    /* Profil */
-    .profile-header { background-color: var(--bg-surface); padding: 30px 20px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto 15px; cursor: pointer; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; background: var(--bg-elevated); }
-    /* img di avatar-container sudah di-cover oleh img umum pointer-events: none */
-    .avatar-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 5px 0; text-align: center; font-weight: bold; pointer-events: none;}
-
-    /* Kategori Chips */
-    .category-container { padding: 16px 20px; display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border-color); }
-    .category-container::-webkit-scrollbar { display: none; }
-    .chip { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-size: 13px; white-space: nowrap; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-    .chip svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
-    .chip.active { background: rgba(255, 140, 0, 0.15); border-color: var(--primary); color: var(--primary); font-weight: bold; }
-
-    /* Layout Cards */
-    .content-list { padding: 20px 20px 90px; display: flex; flex-direction: column; gap: 16px; }
-    .card-horizontal { background: var(--bg-surface); border-radius: 12px; display: flex; border: 1px solid var(--border-color); overflow: hidden; position: relative; align-items: stretch; }
-    .card-horizontal .card-img-wrapper { width: 140px; min-width: 140px; background: var(--bg-elevated); position: relative; cursor: pointer;}
-    .card-horizontal .card-img { width: 100%; height: 100%; object-fit: cover; object-position: center; position: absolute; top:0; left:0;}
-    .card-horizontal .card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    
-    .card-vertical { background: var(--bg-surface); border-radius: 12px; display: flex; flex-direction: column; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
-    .card-vertical .card-img-wrapper { width: 100%; height: 200px; background: var(--bg-elevated); position: relative; cursor: pointer;}
-    .card-vertical .card-img { width: 100%; height: 100%; object-fit: cover; object-position: center; position: absolute; top:0; left:0;}
-    .card-vertical .card-body { padding: 15px; }
-
-    .card-meta { font-size: 11px; color: var(--primary); background: rgba(255,140,0,0.1); padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; font-weight: bold; }
-    .card-desc { font-size: 13px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
-    .badge-github { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 4px 8px; border-radius: 6px; border: 1px solid #555; z-index: 10;}
-
-    /* Server Status API */
-    .server-status { font-size: 12px; background: var(--bg-elevated); padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 6px; }
-    .status-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .status-online { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
-    .status-offline { background-color: var(--danger); box-shadow: 0 0 8px var(--danger); }
-
-    /* Bottom Nav */
-    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 800px; background: var(--bg-surface); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 12px 0 15px 0; z-index: 60; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); font-size: 11px; flex: 1; }
-    .nav-item.active { color: var(--primary); }
-
-    /* Loading Spinner */
-    .loader { border: 4px solid var(--bg-elevated); border-top: 4px solid var(--primary); border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; margin: 0 auto; }
-    .loader-inline { border: 2px solid transparent; border-top: 2px solid var(--primary); border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .splash-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
-
-    /* Notifikasi UI */
-    .notif-badge-icon { position: absolute; top: -2px; right: -2px; background: var(--danger); color: white; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 10px; border: 2px solid var(--bg-surface); }
-    .notif-card { background: var(--bg-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; font-size: 13px; cursor: pointer;}
-    .notif-card.unread { border-left: 4px solid var(--primary); }
-
-    /* Comments Section */
-    .comments-section { margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; }
-    .comment-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--bg-elevated); }
-    .comment-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
-    .comment-author-info { display: flex; align-items: center; gap: 8px; }
-    .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-elevated); border: 1px solid var(--border-color); object-fit: cover;}
-    .comment-author { font-weight: bold; font-size: 13px; color: var(--text-main); }
-    .comment-date { font-size: 11px; color: var(--text-muted); }
-    .comment-text { font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
-    .comment-actions { display: flex; gap: 15px; align-items: center; }
-    .comment-action-btn { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; }
-    .comment-action-btn:hover { color: var(--primary); }
-    .comment-action-btn.danger:hover { color: var(--danger); }
-    .comment-input-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; background: var(--bg-elevated); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .comment-textarea { width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: white; padding: 10px; border-radius: 8px; font-size: 13px; resize: vertical; min-height: 60px; }
-    .comment-textarea:focus { border-color: var(--primary); }
-    .char-counter { font-size: 11px; color: var(--text-muted); text-align: right; }
-    
-    /* Balasan (Replies) */
-    .reply-list { margin-left: 20px; margin-top: 10px; border-left: 2px solid var(--primary); padding-left: 15px; }
-    .reply-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--bg-elevated); }
-    .reply-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .reply-input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .reply-to-text { font-size: 11px; color: var(--primary); font-weight: bold; margin-bottom: 2px;}
-
-    .form-label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; color: var(--text-muted); }
-    .file-upload-box { background: var(--bg-elevated); border: 1px dashed var(--border-color); border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 15px; cursor: pointer; color: var(--primary); font-size: 13px; }
-    .file-upload-box input { display: none; }
-
-    /* Modal Detail Item */
-    #detail-modal .modal-box { width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 0; display: flex; flex-direction: column;}
-    .detail-header-img-wrapper { width: 100%; height: 200px; position: relative; background: var(--bg-elevated); }
-    .detail-header-img { width: 100%; height: 100%; object-fit: cover; }
-    .detail-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;}
-    .detail-content-area { padding: 20px; }
-    
-    /* Loading overlay profil */
-    .profile-loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index: 10; flex-direction: column; gap: 5px;}
-    .profile-loading-overlay .loader-inline { width: 20px; height: 20px; border-width: 3px; }
-    .profile-loading-text { font-size: 9px; font-weight: bold; color: white;}
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- LAYER DIALOG GLOBAL (Paling Atas) -->
+  <div id="dialogLayer" class="hidden">
+    <div class="dialog-overlay" onclick="window.closeTopDialog()"></div>
+    
+    <!-- Dialog Alert/Informasi -->
+    <div id="dialog-alert" class="dialog-box">
+      <h3 id="dialog-alert-title" class="text-primary font-bold" style="margin-bottom: 10px;" data-i18n="info">Informasi</h3>
+      <p id="dialog-alert-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height:1.4;"></p>
+      <div class="flex" style="justify-content:center;">
+        <button class="btn btn-primary" onclick="window.closeDialog('dialog-alert')" style="width:120px;" data-i18n="ok">Oke</button>
+      </div>
+    </div>
+
+    <!-- Dialog Confirm -->
+    <div id="dialog-confirm" class="dialog-box">
+      <h3 id="dialog-confirm-title" class="text-primary font-bold" style="margin-bottom: 10px;" data-i18n="confirm_title">Konfirmasi</h3>
+      <p id="dialog-confirm-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height:1.4;"></p>
+      <div class="flex" style="gap:10px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="window.closeDialog('dialog-confirm')" data-i18n="cancel">Batal</button>
+        <button class="btn btn-danger" style="flex:1;" id="btn-dialog-confirm" data-i18n="ok">Yakin</button>
+      </div>
+    </div>
+
+    <!-- Dialog Profil Publik -->
+    <div id="dialog-user-profile" class="dialog-box" style="padding:0; overflow:hidden;">
+        <div style="background:var(--bg-surface); padding:20px; text-align:center; position:relative;">
+            <button onclick="window.closeDialog('dialog-user-profile')" style="position:absolute; top:10px; right:10px; color:var(--text-muted);"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            <div class="avatar-container" style="width:80px; height:80px; margin:0 auto 10px;">
+                <img id="pub-profile-img" src="" alt="Avatar">
+            </div>
+            <h2 id="pub-profile-name" class="font-bold text-main" style="margin-bottom:5px;">User</h2>
+            <div id="pub-profile-role" style="margin-bottom:10px;"></div>
+            <p id="pub-profile-bio" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; padding:0 10px;"></p>
+            <div class="flex justify-between" style="border-top:1px solid var(--border-color); padding-top:15px;">
+                <div style="flex:1;">
+                    <div style="font-size:18px; font-weight:bold; color:var(--primary);" id="pub-profile-items">0</div>
+                    <div style="font-size:11px; color:var(--text-muted);" data-i18n="items_published">Item Publik</div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:18px; font-weight:bold; color:var(--primary);" id="pub-profile-joined">-</div>
+                    <div style="font-size:11px; color:var(--text-muted);" data-i18n="joined">Bergabung</div>
+                </div>
+            </div>
+        </div>
+        <div id="pub-profile-edit-section" class="hidden" style="padding:15px; border-top:1px solid var(--border-color); background:var(--bg-elevated);">
+             <label class="form-label" style="text-align:left; font-size:11px;" data-i18n="edit_bio">Edit Bio (Maks 80 kar):</label>
+             <input type="text" id="input-pub-bio" class="input-field text-selectable" maxlength="80" style="padding:8px; margin-bottom:10px; font-size:12px;">
+             <button class="btn btn-primary" style="padding:8px; font-size:12px;" onclick="window.saveBio()" data-i18n="save_bio">Simpan Bio</button>
+        </div>
+    </div>
+  </div>
 
   <!-- SPLASH SCREEN -->
   <div id="screen-splash" class="app-container screen splash-container">
@@ -219,29 +69,18 @@
     <p style="color: var(--text-muted); margin-top: 20px; font-size: 14px; font-weight: bold;" data-i18n="verifying_session">Memverifikasi sesi...</p>
   </div>
 
-  <!-- CUSTOM BOTTOM SHEET (Untuk Pilihan Kategori & Versi Server) -->
+  <!-- CUSTOM BOTTOM SHEET (Kategori & Versi) -->
   <div id="bottom-sheet-overlay" class="bottom-sheet-overlay" onclick="window.closeBottomSheet()">
     <div id="bottom-sheet" class="bottom-sheet" onclick="event.stopPropagation()">
       <div style="width:40px; height:5px; background:var(--border-color); border-radius:3px; margin:0 auto 20px;"></div>
       <h3 id="sheet-title" class="font-bold text-main" style="margin-bottom:15px; font-size:18px;">Pilih Opsi</h3>
-      <div id="sheet-options" style="display:flex; flex-direction:column;">
-        <!-- Pilihan Diinjeksi via JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- CUSTOM MODAL UMUM -->
-  <div id="custom-modal" class="modal-overlay">
-    <div class="modal-box" style="padding: 20px;">
-      <h3 id="modal-title" class="text-primary font-bold" style="margin-bottom: 10px; text-align: center;">Pesan</h3>
-      <p id="modal-msg" style="color:var(--text-main); font-size:14px; margin-bottom:20px; line-height: 1.4; text-align: center;"></p>
-      <div id="modal-actions" class="flex" style="gap:10px; justify-content: center;"></div>
+      <div id="sheet-options" style="display:flex; flex-direction:column;"></div>
     </div>
   </div>
 
   <!-- MODAL DETAIL ITEM LENGKAP -->
   <div id="detail-modal" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box-standard">
         <div class="detail-header-img-wrapper img-click-wrapper">
              <button class="detail-close-btn" onclick="document.getElementById('detail-modal').classList.remove('active')">
                  <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -250,22 +89,16 @@
         </div>
         <div class="detail-content-area">
             <h2 id="detail-title" class="font-bold text-main" style="font-size: 20px; margin-bottom: 8px;">Judul</h2>
-            
             <div style="font-size:12px; margin-bottom:10px; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
-                 <img id="detail-uploader-avatar" src="" style="width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--bg-elevated);">
-                 <span>Oleh: <span id="detail-uploader-name" class="text-main font-bold">Name</span></span>
+                 <img id="detail-uploader-avatar" src="" style="width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--bg-elevated); cursor:pointer;">
+                 <span>Oleh: <span id="detail-uploader-name" class="text-main font-bold" style="cursor:pointer;">Name</span></span>
                  <span id="detail-uploader-badge"></span>
             </div>
-
             <div style="margin-bottom: 15px;">
                  <span id="detail-category" class="card-meta">Kategori</span>
                  <span id="detail-version" class="card-meta" style="background:var(--bg-elevated); color:var(--text-muted); border:1px solid var(--border-color);">Versi</span>
             </div>
-
-            <div id="detail-server-status-container" class="hidden" style="margin-bottom:15px;">
-                <!-- Status Server diinjeksi sini -->
-            </div>
-
+            <div id="detail-server-status-container" class="hidden" style="margin-bottom:15px;"></div>
             <h4 class="font-bold text-main" style="margin-bottom: 8px; font-size:14px;" data-i18n="description">Deskripsi</h4>
             <div style="position: relative;">
                 <p id="detail-desc" class="text-selectable" style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; word-break: break-word;">Isi deskripsi...</p>
@@ -273,18 +106,14 @@
                     <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg> <span id="text-translate-desc" data-i18n="translate">Translate</span>
                 </button>
             </div>
+            <div id="detail-action-container" style="margin-bottom: 25px;"></div>
 
-            <div id="detail-action-container" style="margin-bottom: 25px;">
-                <!-- Tombol Download / Salin IP diinjeksi sini -->
-            </div>
-
-            <!-- Bagian Komentar -->
+            <!-- KOMENTAR -->
             <div class="comments-section">
                 <h3 class="font-bold text-main" style="font-size: 16px; margin-bottom: 15px;" data-i18n="comments">Komentar</h3>
-                
                 <div id="comment-form-container">
                     <div class="comment-input-area">
-                        <textarea id="new-comment-text" class="comment-textarea text-selectable" placeholder="Tulis komentar..." maxlength="200" oninput="window.updateCommentCounter('new-comment-text', 'new-comment-counter')"></textarea>
+                        <textarea id="new-comment-text" class="comment-textarea text-selectable" data-i18n-placeholder="write_comment_placeholder" placeholder="Tulis komentar..." maxlength="200" oninput="window.updateCommentCounter('new-comment-text', 'new-comment-counter')"></textarea>
                         <div class="flex justify-between items-center">
                             <span id="new-comment-counter" class="char-counter">0/200</span>
                             <button class="btn btn-primary" style="width: auto; padding: 8px 16px; font-size: 12px;" onclick="window.postComment()" data-i18n="post_comment">Kirim Komentar</button>
@@ -295,25 +124,22 @@
                     <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px;" data-i18n="login_to_comment">Silakan masuk untuk memberikan komentar.</p>
                     <button class="btn btn-primary" style="width:auto; display:inline-block; padding:8px 20px; font-size:12px;" onclick="window.closeDetailAndLogin()" data-i18n="login_btn">Masuk / Daftar</button>
                 </div>
-
                 <div id="comments-list">
                     <p style="text-align:center; color:var(--text-muted); font-size:13px;" data-i18n="loading_comments">Memuat komentar...</p>
                 </div>
             </div>
-
         </div>
     </div>
   </div>
 
-  <!-- MODAL PENOLAKAN ADMIN -->
+  <!-- MODAL PENOLAKAN ADMIN (Untuk form Reject) -->
   <div id="reject-modal" class="modal-overlay">
-    <div class="modal-box" style="padding: 20px;">
+    <div class="modal-box-standard" style="padding: 20px;">
       <h3 class="text-danger font-bold" style="margin-bottom: 10px; text-align: center;">Tolak Item</h3>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px; text-align: center;">Berikan alasan penolakan untuk dikirim ke notifikasi user.</p>
-      <textarea id="reject-reason" class="input-field text-selectable" rows="3" placeholder="Contoh: Link mati atau IP server tidak valid..."></textarea>
+      <textarea id="reject-reason" class="input-field text-selectable" rows="3" placeholder="Contoh: Link mati..."></textarea>
       <div class="flex" style="gap:10px;">
-        <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('reject-modal').classList.remove('active')">Batal</button>
-        <button class="btn btn-danger" style="flex:1;" onclick="window.submitReject()">Tolak Item</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('reject-modal').classList.remove('active')" data-i18n="cancel">Batal</button>
+        <button class="btn btn-danger" style="flex:1;" onclick="window.submitReject()" data-i18n="delete">Tolak Item</button>
       </div>
     </div>
   </div>
@@ -322,10 +148,10 @@
   <div id="drawer-overlay" class="drawer-overlay" onclick="window.closeAllDrawers()"></div>
   <div id="side-drawer" class="side-drawer drawer-left">
     <div style="text-align:center; padding-bottom:15px; border-bottom:1px solid var(--border-color); margin-bottom:10px;">
-      <div class="avatar-container" style="width:60px; height:60px; cursor:default; border:2px solid var(--primary);">
+      <div class="avatar-container img-click-wrapper" style="width:60px; height:60px; border:2px solid var(--primary); margin:0 auto;" id="sidebar-avatar-wrap">
           <img id="sidebar-profile-img" src="https://via.placeholder.com/60" alt="Avatar">
       </div>
-      <h3 id="sidebar-name" style="margin-top:10px; font-size:16px;">Username</h3>
+      <h3 id="sidebar-name" style="margin-top:10px; font-size:16px; cursor:pointer;" id="sidebar-name-wrap">Username</h3>
       <div id="sidebar-role"></div>
     </div>
     <ul class="drawer-menu">
@@ -335,7 +161,7 @@
       </li>
       <li onclick="window.toggleAutoTranslate()" id="menu-auto-translate">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12zm10 6c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6z"/></svg>
-        <span>Auto-Translate: <span id="auto-translate-status" class="text-danger">OFF</span></span>
+        <span data-i18n="auto_translate">Auto-Translate: </span> <span id="auto-translate-status" class="text-danger" style="margin-left:4px;">OFF</span>
       </li>
       <li onclick="window.open('https://wa.me/6283151363087', '_blank')">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 2.98.97 4.29L2 22l5.71-.97C9.02 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM12 16h-1v-4h1v4zm0-6h-1V8h1v2z" fill="currentColor" stroke="none"/></svg>
@@ -371,8 +197,8 @@
         <span id="auth-subtitle-text" data-i18n="login_subtitle">Belum punya akun?</span>
         <span onclick="window.toggleAuthMode()" id="auth-switch-text" style="color:var(--primary); cursor:pointer; font-weight:bold; margin-left: 5px;" data-i18n="login_switch">Daftar di sini</span>
       </p>
-      <input type="email" id="auth-email" placeholder="Alamat Email" class="input-field text-selectable">
-      <input type="password" id="auth-password" placeholder="Password (Minimal 6 karakter)" class="input-field text-selectable">
+      <input type="email" id="auth-email" data-i18n-placeholder="email_placeholder" placeholder="Alamat Email" class="input-field text-selectable">
+      <input type="password" id="auth-password" data-i18n-placeholder="password_placeholder" placeholder="Password (Min 6)" class="input-field text-selectable">
       <button id="auth-submit-btn" class="btn btn-primary" onclick="window.processEmailAuth()" data-i18n="login_btn">Masuk</button>
       <p id="login-error" class="text-danger" style="margin-top: 10px; font-size: 13px;"></p>
       <div class="flex items-center" style="margin: 20px 0; gap: 10px;">
@@ -428,7 +254,7 @@
     <div class="search-container">
       <div class="search-box">
         <svg class="icon icon-sm" style="color:var(--text-muted);" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="search-input" class="text-selectable" placeholder="Cari item, mod, atau server..." data-i18n-placeholder="search_placeholder" oninput="window.handleSearch(this.value)">
+        <input type="text" id="search-input" class="text-selectable" data-i18n-placeholder="search_placeholder" placeholder="Cari item..." oninput="window.handleSearch(this.value)">
       </div>
     </div>
 
@@ -460,7 +286,6 @@
       </button>
     </div>
 
-    <!-- List Item Publik -->
     <div id="public-items-container" class="content-list">
       <div class="loader" style="margin-top: 40px;"></div>
     </div>
@@ -486,12 +311,13 @@
     </header>
     <div class="profile-header">
       <input type="file" id="profile-upload" accept="image/jpeg, image/png, image/webp" class="hidden" onchange="window.handleProfileUpload(event)">
-      <div class="avatar-container img-click-wrapper" onclick="document.getElementById('profile-upload').click()">
-        <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar" class="profile-img">
-        <div class="avatar-overlay" data-i18n="change_photo">UBAH FOTO</div>
-        <div id="profile-upload-loading" class="profile-loading-overlay hidden">
+      <div class="avatar-container" style="border:none;">
+        <img id="profile-img" src="https://via.placeholder.com/150" alt="Avatar" class="profile-img" style="border: 2px solid var(--primary);">
+        <div class="camera-btn" onclick="document.getElementById('profile-upload').click()">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        </div>
+        <div id="profile-upload-loading" class="profile-loading-overlay hidden" style="border-radius:50%;">
             <div class="loader-inline"></div>
-            <span class="profile-loading-text">Loading</span>
         </div>
       </div>
       <div class="flex items-center justify-center" style="margin-bottom: 5px;">
@@ -524,34 +350,31 @@
     
     <div style="padding: 20px; padding-bottom:100px;">
       
-      <!-- Pemilihan Kategori Menggunakan Bottom Sheet -->
       <label class="form-label" data-i18n="category_label">Kategori*</label>
       <div class="input-field flex items-center justify-between" onclick="window.openCategorySheet()" style="cursor:pointer; margin-bottom:20px;">
         <span id="selected-category-text" style="font-weight:bold; color:var(--primary);">Mod</span>
         <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
 
-      <!-- FORM STANDAR (Selain Server) -->
       <div id="form-standard-container">
         <label class="form-label" data-i18n="title_label">Judul Item*</label>
-        <input type="text" id="add-title" placeholder="Contoh: Mod Senjata 3D" class="input-field text-selectable">
+        <input type="text" id="add-title" class="input-field text-selectable">
         <label class="form-label" data-i18n="version_label">Versi MCPE*</label>
-        <input type="text" id="add-version" placeholder="Contoh: 0.15.10" class="input-field text-selectable">
+        <input type="text" id="add-version" class="input-field text-selectable">
       </div>
 
-      <!-- FORM KHUSUS SERVER -->
       <div id="form-server-container" class="hidden">
         <label class="form-label" data-i18n="server_name_label">Nama Server*</label>
-        <input type="text" id="add-server-name" placeholder="Contoh: Stecy SMP" class="input-field text-selectable">
+        <input type="text" id="add-server-name" class="input-field text-selectable">
         
         <div class="flex" style="gap:10px;">
           <div style="flex:2;">
             <label class="form-label" data-i18n="server_ip_label">IP Server*</label>
-            <input type="text" id="add-server-ip" placeholder="play.contoh.com" class="input-field text-selectable">
+            <input type="text" id="add-server-ip" class="input-field text-selectable">
           </div>
           <div style="flex:1;">
             <label class="form-label" data-i18n="server_port_label">Port*</label>
-            <input type="number" id="add-server-port" placeholder="19132" class="input-field text-selectable" value="19132">
+            <input type="number" id="add-server-port" class="input-field text-selectable" value="19132">
           </div>
         </div>
 
@@ -562,25 +385,22 @@
         </div>
       </div>
 
-      <!-- SHARED FIELDS -->
       <label class="form-label" data-i18n="desc_label">Deskripsi*</label>
-      <textarea id="add-desc" placeholder="Tuliskan kegunaan item atau server ini..." rows="3" class="input-field text-selectable"></textarea>
+      <textarea id="add-desc" rows="3" class="input-field text-selectable"></textarea>
       
-      <!-- Upload Gambar -->
       <label class="form-label"><span data-i18n="img_preview_label">Gambar Preview*</span> (Max 5MB)</label>
       <div class="flex" style="gap:10px;">
-        <input type="url" id="add-img" placeholder="URL Gambar" class="input-field text-selectable" style="margin-bottom:0;">
+        <input type="url" id="add-img" class="input-field text-selectable" style="margin-bottom:0;">
         <label class="file-upload-box" style="margin-bottom:0; width:120px; flex:none;">
           <span data-i18n="choose_file">Pilih File</span> <input type="file" id="file-img" accept="image/*" onchange="window.handleLocalImage(event)">
         </label>
       </div>
       <p id="img-status" style="font-size:11px; color:var(--success); margin-bottom:15px; margin-top:5px;"></p>
 
-      <!-- Upload File Download (Hanya muncul jika BUKAN kategori Server) -->
       <div id="form-file-container">
         <label class="form-label"><span data-i18n="file_download_label">File Download / Mod*</span> (Max 5MB)</label>
         <div class="flex" style="gap:10px;">
-          <input type="url" id="add-file" placeholder="URL File Download" class="input-field text-selectable" style="margin-bottom:0;">
+          <input type="url" id="add-file" class="input-field text-selectable" style="margin-bottom:0;">
           <label class="file-upload-box" style="margin-bottom:0; width:120px; flex:none;">
             <span data-i18n="choose_file">Pilih File</span> <input type="file" id="file-doc" onchange="window.handleLocalFile(event)">
           </label>
@@ -622,7 +442,6 @@
     </div>
   </div>
 
-  <!-- Modul utama aplikasi -->
   <script type="module" src="app.js"></script>
 
 </body>
